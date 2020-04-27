@@ -100,7 +100,7 @@ export default {
             console.log("Open EPA Data", response.data);
         });
         //TODO: Be able to get the user input for startDate and endDate
-        epaData.getHistoricalData(this.data.startDate, this.data.endDate).then(response => {
+        epaData.getHistoricalData(this.startDate, this.endDate).then(response => {
             console.log("Get EPA Historical Data", response.data);
         });
     },
