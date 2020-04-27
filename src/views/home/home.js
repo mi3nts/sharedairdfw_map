@@ -100,9 +100,9 @@ export default {
             console.log("Open EPA Data", response.data);
         });
         //TODO: Be able to get the user input for startDate and endDate
-        /*epaData.getHistoricalData(startDate, endDate).then(response => {
+        epaData.getHistoricalData(data.startDate, data.endDate).then(response => {
             console.log("Get EPA Historical Data", response.data);
-        });*/
+        });
     },
     mounted: function () {
         /** Let's first build the layers. Notice that map is not ready yet.
