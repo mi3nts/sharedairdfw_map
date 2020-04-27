@@ -31,8 +31,8 @@ export default {
             epaLayer: false,
             purpleAirLayer: false,
             openAQLayer: false,
-            startDate="",
-            endDate="",
+            startDate: '',
+            endDate: '',
             /** Popup controls */
             howToUse: false,
             /** Currently selected PM type */
