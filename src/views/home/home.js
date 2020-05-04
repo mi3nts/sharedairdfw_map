@@ -94,16 +94,6 @@ export default {
             }
         }
     },
-    created: function () {
-
-        epaData.getLatestCityData().then(response => {
-            console.log("Open EPA Data", response.data);
-        });
-        //TODO: Be able to get the user input for startDate and endDate
-        epaData.getHistoricalData(this.startDate, this.endDate).then(response => {
-            console.log("Get EPA Historical Data", response.data);
-        });
-    },
     mounted: function () {
         /** Let's first build the layers. Notice that map is not ready yet.
          * We are building layers not rendering them
@@ -287,7 +277,7 @@ export default {
                     popupAnchor: [0, -30]
                 })
             })
-            location.marker.addTo(this.purpleAirGroup);
+            location.marker.addTo(this.epaGroup);
             var popup = "<div style='font-size:14px'>";
             popup += "<div style='text-align:center; font-weight:bold'>" + location.Label + " </div><br>";
             popup += "<li> PM0.3 : " + location.p_0_3_um + " µg/m³ </li><br>";
@@ -340,6 +330,43 @@ export default {
                 });
             });
         },
+        loadepa: function () {
+
+        epaData.getLatestCityData().then(response => {
+            console.log("Open EPA Data", response.data);
+        });
+        //TODO: Be able to get the user input for startDate and endDate
+        epaData.getHistoricalData(this.startDate, this.endDate).then(response => {
+            console.log("Get EPA Historical Data", response.data);
+        });
+            // Unfinished at the moment
+            //this.renderepa(result)
+        },
+        /*renderepa: function (location) {
+            location.marker = L.marker([Latitude, Longitude], {
+                icon: L.divIcon({
+                    className: 'svg-icon',
+                    html: this.getDiamondMarker("purple", 20),
+                    iconAnchor: [20, 10],
+                    iconSize: [20, 32],
+                    popupAnchor: [0, -30]
+                })
+            })
+            location.marker.addTo(this.purpleAirGroup);
+            var popup = "<div style='font-size:14px'>";
+            popup += "<div style='text-align:center; font-weight:bold'>" + location.Label + " </div><br>";
+            popup += "<li> PM0.3 : " + location.p_0_3_um + " µg/m³ </li><br>";
+            popup += "<li> PM0.3 : " + location.p_0_5_um + " µg/m³ </li><br>";
+            popup += "<li> PM0.3 : " + location.p_1_0_um + " µg/m³ </li><br>";
+            popup += "<li> PM0.3 : " + location.p_2_5_um + " µg/m³ </li><br>";
+            popup += "<li> PM0.3 : " + location.p_5_0_um + " µg/m³ </li><br>";
+            popup += "<li> PM0.3 : " + location.p_10_0_um + " µg/m³ </li><br>";
+            popup += "<li> Temperature : " + location.temp_f + " °F </li><br>";
+            popup += "<li> Humidity : " + location.humidity + " % </li><br>";
+
+            popup += "</div>";
+            location.marker.bindPopup(popup);
+    },*/
 
         // single click pop up information
         renderSensor: function (sensor) {
@@ -421,6 +448,9 @@ export default {
         getTriangleMarker(color, size) {
             var svg = `<svg version="1.1" id="Layer_2" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" preserveAspectRatio="xMidYMin" height="${size}" width="${size}" xml:space="preserve"><g><path style="fill:${color}" d="M507.521,427.394L282.655,52.617c-12.074-20.122-41.237-20.122-53.311,0L4.479,427.394c-12.433,20.72,2.493,47.08,26.655,47.08h449.732C505.029,474.474,519.955,448.114,507.521,427.394z"/></g></svg>`;
             return svg;
-        }
+        },
+        getDiamondMarker(color, size) {
+            var svg =  '<svg id="Layer_3" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 506.1 506.1" preserveAspectRatio="xMidYMin" height="${size}" viewBox="0 0 512 512" width="${size}" style = 'fill:${color}" points="128,256 256,0 384,256 256,512"></svg>'
+            return svg;
     }
 };
