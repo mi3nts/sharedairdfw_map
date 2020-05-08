@@ -1,104 +1,174 @@
 <div class="home fill-height">
     <div id="map" class="fill-height"></div>
-    <div class="side-drawer visible">
-        <div class="menu-container">
-            <v-icon @click="slide">menu</v-icon>
-        </div>
-        <div class="text-center">
-            <v-btn @click="howToUse=true;" class="ma-2" tile outlined color="primary">
-                <v-icon left>mdi-help</v-icon> How To Use
-            </v-btn>
-        </div>
 
-        <v-expansion-panels style="width:275px" :value="activePanel" accordion>
-            <v-expansion-panel>
-                <v-expansion-panel-header>
-                    <div @click.stop>
-                        <v-checkbox class="my-0" hide-details color="primary" v-model="sensorLayer" label="Sensor Data">
-                        </v-checkbox>
-                    </div>
-                </v-expansion-panel-header>
-                <v-expansion-panel-content>
-                    <div>
-                        <v-radio-group hide-details v-model="pmType" class="my-0">
-                            <v-radio color="primary" label="PM2.5" value="pm2_5"></v-radio>
-                        </v-radio-group>
-                        <div class="scale">
-                            <img src="/img/colorscale2.png" />
-                        </div>
-                    </div>
-                </v-expansion-panel-content>
-            </v-expansion-panel>
-            <v-expansion-panel>
-                <v-expansion-panel-header>
-                    <div @click.stop>
-                        <v-checkbox class="my-0" hide-details color="primary" v-model="radarLayer" label="Radar">
-                        </v-checkbox>
-                    </div>
-                </v-expansion-panel-header>
-                <v-expansion-panel-content>
-                    <div>
-                        See radar overlay on map...
-                    </div>
-                </v-expansion-panel-content>
-            </v-expansion-panel>
-            <v-expansion-panel>
-                <v-expansion-panel-header>
-                    <div @click.stop>
-                        <v-checkbox :disabled="!wind.data_time" class="my-0" hide-details color="primary"
-                            v-model="windLayer" label="NOAA (Wind)"></v-checkbox>
-                    </div>
-                </v-expansion-panel-header>
-                <v-expansion-panel-content>
-                    <div class="body-2">
-                        <div><b class="caption">Data Time: </b>{{wind.data_time? wind.data_time : 'Updating..' }}</div>
-                        <div><b class="caption">Updated Last: </b>{{wind.updated_time? wind.updated_time: 'Updating..'}}</div>
-                    </div>
-                </v-expansion-panel-content>
-            </v-expansion-panel>
-            <v-expansion-panel>
-                <v-expansion-panel-header>
-                    <div @click.stop>
-                        <v-checkbox class="my-0" hide-details color="primary" v-model="openAQLayer" label="OpenAQ">
-                        </v-checkbox>
-                    </div>
-                </v-expansion-panel-header>
-                <v-expansion-panel-content>
-                    <div>
-                        Coming soon...
-                    </div>
-                </v-expansion-panel-content>
-            </v-expansion-panel>
-            <v-expansion-panel>
-                <v-expansion-panel-header>
-                    <div @click.stop>
-                        <v-checkbox class="my-0" hide-details color="primary" v-model="epaLayer" label="EPA">
-                        </v-checkbox>
-                    </div>
-                </v-expansion-panel-header>
-                <v-expansion-panel-content>
-                    <div>
-                        Coming soon...
-                    </div>
-                </v-expansion-panel-content>
-            </v-expansion-panel>
-            <v-expansion-panel>
-                <v-expansion-panel-header>
-                    <div @click.stop>
-                        <v-checkbox class="my-0" hide-details color="primary" v-model="purpleAirLayer"
-                            label="PurpleAir">
-                        </v-checkbox>
-                    </div>
-                </v-expansion-panel-header>
-                <v-expansion-panel-content>
-                    <div>
-                        Coming soon...
-                    </div>
-                </v-expansion-panel-content>
-            </v-expansion-panel>
-        </v-expansion-panels>
+    <v-card id="floating-menu">
+        <div id="floating-menu-expander" @click="slide">
+            <v-icon class="mr-1">menu</v-icon>Menu
+        </div>
+        <div id="floating-menu-content">
+            <div id="floating-menu-header">
+                <h2>Configure Map</h2>
+                <v-icon @click="slide">close</v-icon>
+            </div>
+            <div>
+                <hr class="ma-4">
+                <div>
+                    Showing: {{(new Date().toLocaleString("en-GB", {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: "2-digit", minute: "2-digit", dayPeriod: "long", hour12: true}))}}
+                </div>
+                <div class="buttons">
+                    <button>Change</button><button>Animate 1 hour</button><button>Animate 1 day</button>
+                </div>
+            </div>
+            <div>
+                <hr class="ma-4">
+                <div class="mb-2 mt-2">Select the layers you want to see on the map.</div>
+                <div>
+                    <div><label><input type="checkbox" v-model="showParticulates">&nbsp;Particulate Matter</label></div>
+                    <div class="pl-6"><label><input type="checkbox" v-model="sensorLayer">&nbsp;SharedAirDFW</label></div>
+                    <div class="pl-6"><label><input type="checkbox" v-model="purpleAirLayer">&nbsp;PurpleAir</label></div>
+                    <div class="pl-6"><label><input type="checkbox" v-model="openAQLayer">&nbsp;OpenAQ</label></div>
+                    <div class="pl-6"><label><input type="checkbox" v-model="epaLayer">&nbsp;EPA</label></div>
+                    <div><label><input type="checkbox" v-model="radarLayer">&nbsp;Weather Radar</label></div>
+                    <div><label><input type="checkbox" v-model="windLayer">&nbsp;Wind Speed</label></div>
+                </div>
+            </div>
+            <div v-if="showParticulates && sensorLayer">
+                <hr class="ma-4">
+                <div>SharedAirDFW</div>
+                <div>... config options go here ...</div>
+                <div>this is where we would have the toggle for different PM sizes, if we're doing that</div>
+            </div>
+            <div v-if="showParticulates && purpleAirLayer">
+                <hr class="ma-4">
+                <div>PurpleAir</div>
+                <div>... config options go here ...</div>
+            </div>
+            <div v-if="showParticulates && openAQLayer">
+                <hr class="ma-4">
+                <div>OpenAQ</div>
+                <label><input type="radio" value="pm" v-model="openAQMetric">&nbsp;PM 2.5</label>
+                <br>
+                <label><input type="radio" value="o3" v-model="openAQMetric">&nbsp;Ozone</label>
+                <br>
+                <div>... config options go here ...</div>
+            </div>
+            <div v-if="showParticulates && epaLayer">
+                <hr class="ma-4">
+                <div>EPA</div>
+                <div>... config options go here ...</div>
+            </div>
+            <div v-if="radarLayer">
+                <hr class="ma-4">
+                <div>Weather Radar</div>
+                <div>... config options go here ...</div>
+            </div>
+            <div v-if="windLayer">
+                <hr class="ma-4">
+                <div>Wind Speed</div>
+                <div>... config options go here ...</div>
+            </div>
+        </div>
+    </v-card>
 
-    </div>
+<!--    <div class="side-drawer visible">-->
+<!--        <div class="menu-container">-->
+<!--            <v-icon @click="slide">menu</v-icon> Menu-->
+<!--        </div>-->
+<!--        <div class="text-center">-->
+<!--            <v-btn @click="howToUse=true;" class="ma-2" tile outlined color="primary">-->
+<!--                <v-icon left>mdi-help</v-icon> How To Use-->
+<!--            </v-btn>-->
+<!--        </div>-->
+
+<!--        <v-expansion-panels style="width:275px" :value="activePanel" accordion>-->
+<!--            <v-expansion-panel>-->
+<!--                <v-expansion-panel-header>-->
+<!--                    <div @click.stop>-->
+<!--                        <v-checkbox class="my-0" hide-details color="primary" v-model="sensorLayer" label="Sensor Data">-->
+<!--                        </v-checkbox>-->
+<!--                    </div>-->
+<!--                </v-expansion-panel-header>-->
+<!--                <v-expansion-panel-content>-->
+<!--                    <div>-->
+<!--                        <v-radio-group hide-details v-model="pmType" class="my-0">-->
+<!--                            <v-radio color="primary" label="PM2.5" value="pm2_5"></v-radio>-->
+<!--                        </v-radio-group>-->
+<!--                        <div class="scale">-->
+<!--                            <img src="/img/colorscale2.png" />-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </v-expansion-panel-content>-->
+<!--            </v-expansion-panel>-->
+<!--            <v-expansion-panel>-->
+<!--                <v-expansion-panel-header>-->
+<!--                    <div @click.stop>-->
+<!--                        <v-checkbox class="my-0" hide-details color="primary" v-model="radarLayer" label="Radar">-->
+<!--                        </v-checkbox>-->
+<!--                    </div>-->
+<!--                </v-expansion-panel-header>-->
+<!--                <v-expansion-panel-content>-->
+<!--                    <div>-->
+<!--                        See radar overlay on map...-->
+<!--                    </div>-->
+<!--                </v-expansion-panel-content>-->
+<!--            </v-expansion-panel>-->
+<!--            <v-expansion-panel>-->
+<!--                <v-expansion-panel-header>-->
+<!--                    <div @click.stop>-->
+<!--                        <v-checkbox :disabled="!wind.data_time" class="my-0" hide-details color="primary"-->
+<!--                            v-model="windLayer" label="NOAA (Wind)"></v-checkbox>-->
+<!--                    </div>-->
+<!--                </v-expansion-panel-header>-->
+<!--                <v-expansion-panel-content>-->
+<!--                    <div class="body-2">-->
+<!--                        <div><b class="caption">Data Time: </b>{{wind.data_time? wind.data_time : 'Updating..' }}</div>-->
+<!--                        <div><b class="caption">Updated Last: </b>{{wind.updated_time? wind.updated_time: 'Updating..'}}</div>-->
+<!--                    </div>-->
+<!--                </v-expansion-panel-content>-->
+<!--            </v-expansion-panel>-->
+<!--            <v-expansion-panel>-->
+<!--                <v-expansion-panel-header>-->
+<!--                    <div @click.stop>-->
+<!--                        <v-checkbox class="my-0" hide-details color="primary" v-model="openAQLayer" label="OpenAQ">-->
+<!--                        </v-checkbox>-->
+<!--                    </div>-->
+<!--                </v-expansion-panel-header>-->
+<!--                <v-expansion-panel-content>-->
+<!--                    <div>-->
+<!--                        Coming soon...-->
+<!--                    </div>-->
+<!--                </v-expansion-panel-content>-->
+<!--            </v-expansion-panel>-->
+<!--            <v-expansion-panel>-->
+<!--                <v-expansion-panel-header>-->
+<!--                    <div @click.stop>-->
+<!--                        <v-checkbox class="my-0" hide-details color="primary" v-model="epaLayer" label="EPA">-->
+<!--                        </v-checkbox>-->
+<!--                    </div>-->
+<!--                </v-expansion-panel-header>-->
+<!--                <v-expansion-panel-content>-->
+<!--                    <div>-->
+<!--                        Coming soon...-->
+<!--                    </div>-->
+<!--                </v-expansion-panel-content>-->
+<!--            </v-expansion-panel>-->
+<!--            <v-expansion-panel>-->
+<!--                <v-expansion-panel-header>-->
+<!--                    <div @click.stop>-->
+<!--                        <v-checkbox class="my-0" hide-details color="primary" v-model="purpleAirLayer"-->
+<!--                            label="PurpleAir">-->
+<!--                        </v-checkbox>-->
+<!--                    </div>-->
+<!--                </v-expansion-panel-header>-->
+<!--                <v-expansion-panel-content>-->
+<!--                    <div>-->
+<!--                        Coming soon...-->
+<!--                    </div>-->
+<!--                </v-expansion-panel-content>-->
+<!--            </v-expansion-panel>-->
+<!--        </v-expansion-panels>-->
+
+<!--    </div>-->
     <div v-if="selectedSensor" class="side-window">
         <Sensor :spot="selectedSensor" @close="selectedSensor=null" />
     </div>

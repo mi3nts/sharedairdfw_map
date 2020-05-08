@@ -25,14 +25,18 @@ export default {
                 data_time: null,
                 updated_time: null
             },
+            showParticulates: true,
             radarLayer: false,
             windLayer: false,
             sensorLayer: true,
-            epaLayer: false,
             purpleAirLayer: false,
             openAQLayer: false,
+            epaLayer: false,
             //startDate: null,
             //endDate: null,
+            openAQMetric: "pm",
+
+
             /** Popup controls */
             howToUse: false,
             /** Currently selected PM type */
@@ -42,7 +46,8 @@ export default {
             /** All available sensor instances  */
             sensors: [],
             sensorGroup: L.layerGroup(),
-            openAQGroup: L.layerGroup(),
+            openAQGroupPM: L.layerGroup(),
+            openAQGroupO3: L.layerGroup(),
             purpleAirGroup: L.layerGroup(),
             epaGroup: L.layerGroup(),
         }
@@ -51,32 +56,77 @@ export default {
         'pmType': function () {
             this.refreshIcons()
         },
-        'openAQLayer': function (newValue) {
+        'showParticulates': function (newValue) {
             if (newValue) {
-                this.openAQGroup.addTo(this.map)
+                if (this.sensorLayer) {
+                    this.sensorGroup.addTo(this.map);
+                }
+                if (this.purpleAirLayer) {
+                    this.purpleAirGroup.addTo(this.map);
+                }
+                if (this.openAQLayer) {
+                    if (this.openAQMetric === "pm") {
+                        this.openAQGroupPM.addTo(this.map);
+                    }
+                    else if (this.openAQMetric === "o3") {
+                        this.openAQGroupO3.addTo(this.map);
+                    }
+                }
+                if (this.epaLayer) {
+                    this.epaGroup.addTo(this.map);
+                }
             } else {
-                this.map.removeLayer(this.openAQGroup);
-            }
-        },
-        'purpleAirLayer': function (newValue) {
-            if (newValue) {
-                this.purpleAirGroup.addTo(this.map)
-            } else {
-                this.map.removeLayer(this.purpleAirGroup);
-            }
-        },
-        'epaLayer': function (newValue) {
-            if (newValue) {
-                this.epaGroup.addTo(this.map)
-            } else {
-                this.map.removeLayer(this.epaGroup);
+                if (this.sensorLayer) {
+                    this.map.removeLayer(this.sensorGroup);
+                }
+                if (this.purpleAirLayer) {
+                    this.map.removeLayer(this.purpleAirGroup);
+                }
+                if (this.openAQLayer) {
+                    this.map.removeLayer(this.openAQGroupPM);
+                    this.map.removeLayer(this.openAQGroupO3);
+                }
+                if (this.epaLayer) {
+                    this.map.removeLayer(this.epaGroup);
+                }
             }
         },
         'sensorLayer': function (newValue) {
-            if (newValue) {
-                this.sensorGroup.addTo(this.map)
-            } else {
+            if (newValue && this.showParticulates) {
+                this.sensorGroup.addTo(this.map);
+            }
+            else {
                 this.map.removeLayer(this.sensorGroup);
+            }
+        },
+        'purpleAirLayer': function (newValue) {
+            if (newValue && this.showParticulates) {
+                this.purpleAirGroup.addTo(this.map);
+            }
+            else {
+                this.map.removeLayer(this.purpleAirGroup);
+            }
+        },
+        'openAQLayer': function (newValue) {
+            if (newValue && this.showParticulates) {
+                if (this.openAQMetric === "pm") {
+                    this.openAQGroupPM.addTo(this.map);
+                }
+                else if (this.openAQMetric === "o3") {
+                    this.openAQGroupO3.addTo(this.map);
+                }
+            }
+            else {
+                this.map.removeLayer(this.openAQGroupPM);
+                this.map.removeLayer(this.openAQGroupO3);
+            }
+        },
+        'epaLayer': function (newValue) {
+            if (newValue && this.showParticulates) {
+                this.epaGroup.addTo(this.map);
+            }
+            else {
+                this.map.removeLayer(this.epaGroup);
             }
         },
         'radarLayer': function (newValue) {
@@ -91,6 +141,17 @@ export default {
                 this.layers.wind_layer.addTo(this.map);
             } else {
                 this.map.removeLayer(this.layers.wind_layer);
+            }
+        },
+        'openAQMetric': function (newValue) {
+            console.log(newValue);
+            if (newValue === "pm") {
+                this.map.removeLayer(this.openAQGroupO3);
+                this.openAQGroupPM.addTo(this.map);
+            }
+            else if (newValue === "o3") {
+                this.map.removeLayer(this.openAQGroupPM);
+                this.openAQGroupO3.addTo(this.map);
             }
         }
     },
@@ -125,6 +186,8 @@ export default {
          * This will load data from PurpleAir API
          */
         this.loadPurpleAir();
+
+        $("#floating-menu").toggleClass("visible", window.matchMedia('(min-width: 900px)').matches);
     },
     methods: {
         buildLayers: function () {
@@ -320,7 +383,12 @@ export default {
                     popupAnchor: [0, -30]
                 })
             })
-            location.marker.addTo(this.openAQGroup);
+            if (location.measurements.some(m => m.parameter === "pm25")) {
+                location.marker.addTo(this.openAQGroupPM);
+            }
+            if (location.measurements.some(m => m.parameter === "o3")) {
+                location.marker.addTo(this.openAQGroupO3);
+            }
             var popup = "<div style='font-size:14px'>";
             popup += "<div style='text-align:center; font-weight:bold'>" + location.location + " </div><br>";
             location.measurements.forEach(m => {
@@ -403,16 +471,18 @@ export default {
             else if (PM > 100) return "#732626";
         },
         slide() {
-            var hidden = $('.side-drawer');
-            if (hidden.hasClass('visible')) {
-                hidden.animate({
-                    "left": "-286px"
-                }, "slow").removeClass('visible');
-            } else {
-                hidden.animate({
-                    "left": "0px"
-                }, "slow").addClass('visible');
-            }
+            $("#floating-menu").toggleClass("visible");
+
+            // var hidden = $('.side-drawer');
+            // if (hidden.hasClass('visible')) {
+            //     hidden.animate({
+            //         "left": "-286px"
+            //     }, "slow").removeClass('visible');
+            // } else {
+            //     hidden.animate({
+            //         "left": "0px"
+            //     }, "slow").addClass('visible');
+            // }
         },
         getSquareMarker(color, size) {
             var svg = `<svg id="Layer_1" enable-background="new 0 0 506.1 506.1" preserveAspectRatio="xMidYMin" height="${size}" viewBox="0 0 506.1 506.1" width="${size}" xmlns="http://www.w3.org/2000/svg"><path style="fill:${color}" d="m489.609 0h-473.118c-9.108 0-16.491 7.383-16.491 16.491v473.118c0 9.107 7.383 16.491 16.491 16.491h473.119c9.107 0 16.49-7.383 16.49-16.491v-473.118c0-9.108-7.383-16.491-16.491-16.491z"/></svg>`;

@@ -1,9 +1,9 @@
 <template>
   <v-app>
     <v-app-bar app dark color="primary" class="align-center">
-      <img class="mr-2" height="50px" src="/img/logo_white.png" />
+      <img id="header-logo" class="mr-3" height="40px" src="/img/logo_white.png" alt="Shared Air DFW logo" />
       <v-toolbar-title class="display-1 mr-10">
-        <span>SharedAirDFW</span>
+        <span><b>SharedAirDFW</b></span>
       </v-toolbar-title>
       <!-- <v-btn x-large depressed exact text :to="{name : 'home'}">
         <span class="mr-2">Map</span>
