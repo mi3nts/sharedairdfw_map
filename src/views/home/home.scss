@@ -6,33 +6,76 @@
     width: 400px;
 }
 
-.side-drawer {
+
+#floating-menu {
     position: absolute;
-    top: 0px;
+    top: 0;
+    left: 0;
     z-index: 999;
-    background: white;
     margin: 10px;
+    max-width: calc(100% - 100px);
 
-    .scale {
-        background-color: #38b5e6;
-        margin-left: -25px;
-        margin-right: -25px;
-        margin-top: 10px;
+    #floating-menu-expander {
+        padding: 6px 12px;
+        cursor: pointer;
+    }
 
-        img {
+    #floating-menu-content {
+        width: 400px;
+        padding: 6px 12px;
+        max-width: 100%;
+
+        #floating-menu-header {
+            display: flex;
             width: 100%;
+            justify-content: space-between;
+        }
+
+        .buttons button {
+            color: blue;
+            text-decoration: underline;
+            padding-right: 10px;
         }
     }
 
-    .menu-container {
-        position: absolute;
-        right: -25px;
-        background: white;
-        cursor: pointer;
-        padding-left: 5px;
+    &.visible #floating-menu-expander {
+        display: none !important;
+    }
 
-        i {
-            color: #38b5e6;
-        }
+    &:not(.visible) #floating-menu-content {
+        display: none !important;
     }
 }
+
+//.side-drawer {
+//    position: absolute;
+//    top: 0;
+//    z-index: 999;
+//    background: red;
+//    margin: 10px;
+//
+//    .scale {
+//        background-color: #38b5e6;
+//        margin-left: -25px;
+//        margin-right: -25px;
+//        margin-top: 10px;
+//
+//        img {
+//            width: 100%;
+//        }
+//    }
+//
+//    .menu-container {
+//        //position: absolute;
+//        //right: -25px;
+//        background: white;
+//        cursor: pointer;
+//        //padding-left: 5px;
+//
+//        white-space: nowrap;
+//
+//        i {
+//            color: #38b5e6;
+//        }
+//    }
+//}
