@@ -172,9 +172,9 @@ export default {
                 "http://{s}.sm.mapstack.stamen.com/" +
                 "(toner-lite,$fff[difference],$fff[@23],$fff[hsl-saturation@20])/" +
                 "{z}/{x}/{y}.png", {
-                    attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, ' +
-                        'NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
-                }
+                attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, ' +
+                    'NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
+            }
             );
             this.layerControl.addBaseLayer(this.layers.dark_mode, "Dark Mode");
 
@@ -194,12 +194,12 @@ export default {
             /** Radar Layer */
             this.layers.radar = L.tileLayer.wms(
                 "http://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0r.cgi", {
-                    layers: 'nexrad-n0r',
-                    format: 'image/png',
-                    transparent: true,
-                    attribution: "Weather data &copy; 2015 IEM Nexrad",
-                    zIndex: 1000
-                }
+                layers: 'nexrad-n0r',
+                format: 'image/png',
+                transparent: true,
+                attribution: "Weather data &copy; 2015 IEM Nexrad",
+                zIndex: 1000
+            }
             );
 
             /** Wind Layer */

@@ -21,9 +21,9 @@ export default {
             $("#chart2_" + this.sensor.sensor_id).html("<div class='my-4 text-center'>Loading data...</div>");
             sensorData.getChartData(
                 this.sensor.sensor_id, {
-                    start: this.$moment.utc(this.startDate).toISOString(),
-                    end: this.$moment.utc(this.endDate).toISOString(),
-                }, this.dataInterval
+                start: this.$moment.utc(this.startDate).toISOString(),
+                end: this.$moment.utc(this.endDate).toISOString(),
+            }, this.dataInterval
             ).then(response => {
                 if (response.data.length) {
                     $("#chart2_" + this.sensor.sensor_id).html("<svg> </svg>")
@@ -36,7 +36,7 @@ export default {
         updateDataInterval: function (value) {
             this.dataInterval = value
             var text = 'All data'
-            switch(value) {
+            switch (value) {
                 case '1 60:60:60':
                     text = '1 Day'
                     break
@@ -56,33 +56,33 @@ export default {
             var length = values.length;
             length = length / 3000;
             length = Math.round(length);
-            
+
             var newValues = [];
             var temp = [];
             var indexJ = 0;
             var average = 0;
-            
-            temp.push({x:values[0].x, y:values[0].y});
-            for(var i = 1; i < values.length; i++){
-                if(temp.length >= length){
+
+            temp.push({ x: values[0].x, y: values[0].y });
+            for (var i = 1; i < values.length; i++) {
+                if (temp.length >= length) {
                     average = 0;
-                    for(indexJ = 0; indexJ < temp.length; indexJ++){
+                    for (indexJ = 0; indexJ < temp.length; indexJ++) {
                         average += temp[indexJ].y;
                     }
                     average = average / temp.length;
-                    newValues.push({x:temp[0].x, y:average});
-                    
+                    newValues.push({ x: temp[0].x, y: average });
+
                     temp = [];
                 }
-                temp.push({x:values[i].x, y:values[i].y});
+                temp.push({ x: values[i].x, y: values[i].y });
             }
-            if(temp.length >= 1){
+            if (temp.length >= 1) {
                 average = 0;
-                for(indexJ = 0; indexJ < temp.length; indexJ++){
+                for (indexJ = 0; indexJ < temp.length; indexJ++) {
                     average += temp[indexJ].y;
                 }
                 average = average / temp.length;
-                newValues.push({x:temp[0].x, y:average});
+                newValues.push({ x: temp[0].x, y: average });
             }
             return newValues;
         },
@@ -95,10 +95,12 @@ export default {
                     y: data[i].pm2_5
                 });
             }
-            if(sensorValues.length > 3000){
+            console.log(sensorValues)
+            if (sensorValues.length > 3000) {
                 sensorValues = this.changeInterval(sensorValues);
             }
-            var maxYValue = Math.max.apply(Math, sensorValues.map(function(o) { return o.y; }))
+
+            var maxYValue = Math.max.apply(Math, sensorValues.map(function (o) { return o.y; }))
             var yellowValue = 0;
             var orangeValue = 0;
             var redValue = 0;
@@ -135,65 +137,65 @@ export default {
                 { //0-10µg/m³ yellow
                     key: "0-10µg/m³",
                     values: [{
-                            x: sensorValues[0].x,
-                            y: yellowValue
-                        },
-                        {
-                            x: sensorValues[sensorValues.length - 1].x,
-                            y: yellowValue
-                        }
+                        x: sensorValues[0].x,
+                        y: yellowValue
+                    },
+                    {
+                        x: sensorValues[sensorValues.length - 1].x,
+                        y: yellowValue
+                    }
                     ],
                     color: '#ffff44'
                 },
                 { //10-20/m³ orange
                     key: "10-20µg/m³",
                     values: [{
-                            x: sensorValues[0].x,
-                            y: orangeValue
-                        },
-                        {
-                            x: sensorValues[sensorValues.length - 1].x,
-                            y: orangeValue
-                        }
+                        x: sensorValues[0].x,
+                        y: orangeValue
+                    },
+                    {
+                        x: sensorValues[sensorValues.length - 1].x,
+                        y: orangeValue
+                    }
                     ],
                     color: '#ff5500'
                 },
                 { //20-50µg/m³ red
                     key: "20-50µg/m³",
                     values: [{
-                            x: sensorValues[0].x,
-                            y: redValue
-                        },
-                        {
-                            x: sensorValues[sensorValues.length - 1].x,
-                            y: redValue
-                        }
+                        x: sensorValues[0].x,
+                        y: redValue
+                    },
+                    {
+                        x: sensorValues[sensorValues.length - 1].x,
+                        y: redValue
+                    }
                     ],
                     color: '#cc0000'
                 },
                 { //50-100µg/m³ purple
                     key: "50-100µg/m³",
                     values: [{
-                            x: sensorValues[0].x,
-                            y: purpleValue
-                        },
-                        {
-                            x: sensorValues[sensorValues.length - 1].x,
-                            y: purpleValue
-                        }
+                        x: sensorValues[0].x,
+                        y: purpleValue
+                    },
+                    {
+                        x: sensorValues[sensorValues.length - 1].x,
+                        y: purpleValue
+                    }
                     ],
                     color: '#990099'
                 },
                 { //100+µg/m³ maroon
                     key: "100+µg/m³",
                     values: [{
-                            x: sensorValues[0].x,
-                            y: maroonValue
-                        },
-                        {
-                            x: sensorValues[sensorValues.length - 1].x,
-                            y: maroonValue
-                        }
+                        x: sensorValues[0].x,
+                        y: maroonValue
+                    },
+                    {
+                        x: sensorValues[sensorValues.length - 1].x,
+                        y: maroonValue
+                    }
                     ],
                     color: '#aa2626'
                 }

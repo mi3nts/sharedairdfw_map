@@ -1,5 +1,6 @@
 import sensorData from "../../services/sensor-data";
 import SensorChart from "../sensor-chart"
+
 /**
  * This is stand alone component showing sensor data only. 
  * Eventually it will grow to show more data.
@@ -10,18 +11,35 @@ export default {
     },
     props: ["spot", "spotName"],
     data: () => ({
-        showMore: false
+        showMore: false,
+        pm2_5: null,
+        pm2: null,
     }),
     //monitoring the change
     watch: {
         'spot': function () {
             this.initChart();
-        }
+        },
     },
-    created: function () {},
+
+    created: function () { },
     mounted: function () {
         this.initChart();
+        //subscribed to the whole folder of Mints topics
+        console.log(this.$mqtt.subscribe('Mints/#'))
     },
+    mqtt: {
+        //subscribe to sensor1 topic
+        "Mints/sensor1"(data) {
+            console.log("This is " + data)
+            /* this.pm2 = data
+            console.log("This is pm2: " + this.pm2)
+            console.log("This is spot 2.5 " + this.spot.pm2_5)
+            this.spot.pm2_5 = data */
+
+        }
+    },
+
     methods: {
         initChart: function () {
             $("#chart").css('height', '50px').html("<div class='my-4 text-center'>Loading data...</div>");
@@ -32,10 +50,12 @@ export default {
                 if (response.data.length) {
                     $("#chart").css('height', '250px').html("<svg> </svg>")
                     this.createChart(response.data);
+                    this.updateValues()
                 } else {
                     $("#chart").css('height', '50px').html("<div class='my-4 text-center'>No data available.</div>");
                 }
             });
+
         },
         formatNumber: function (num) {
             return Number(num).toFixed(1);
@@ -46,7 +66,39 @@ export default {
         closeIt: function () {
             this.$emit('close');
         },
+        getPmValue: function (index) {
+            return this.pm2_5[index]
+        },
+        updateValues: function () {
+            //console.log(data)
+            console.log("Updating values...")
+            //const timer = 
+            setInterval(() => {
+                //querying the endpoint
+                sensorData.getSensorData(this.spot.sensor_id).then(response => {
+                    console.log(response);
+                    //maybe check timestamp to avoid writes
+                    if (response.data != null) {
+                        this.spot.pm2_5 = response.data[0].pm2_5
+                        this.spot.pm1 = response.data[0].pm1
+                        this.spot.pm10 = response.data[0].pm10
+                        this.spot.temperature = response.data[0].temperature
+                        this.spot.humidity = response.data[0].humidity
+                        this.spot.timestamp = response.data[0].timestamp
+                    }
+                    else {
+                        console.log("undefined or null data")
+                    }
+
+
+                })
+
+            }, 30000)
+            //clearInterval(timer);
+
+        },
         createChart: function (data) {
+
             //formats the data for the chart
             var sensorValues = [];
             for (var i = 0; i < data.length; i++) {
@@ -55,8 +107,11 @@ export default {
                     y: data[i].pm2_5
                 });
             }
+
+
+
             //define values of different color
-            var maxYValue = Math.max.apply(Math, sensorValues.map(function(o) { return o.y; }))
+            var maxYValue = Math.max.apply(Math, sensorValues.map(function (o) { return o.y; }))
             var yellowValue = 0;
             var orangeValue = 0;
             var redValue = 0;
@@ -94,65 +149,65 @@ export default {
                 { //0-10µg/m³ yellow
                     key: "0-10µg/m³",
                     values: [{
-                            x: sensorValues[0].x,
-                            y: yellowValue
-                        },
-                        {
-                            x: sensorValues[sensorValues.length - 1].x,
-                            y: yellowValue
-                        }
+                        x: sensorValues[0].x,
+                        y: yellowValue
+                    },
+                    {
+                        x: sensorValues[sensorValues.length - 1].x,
+                        y: yellowValue
+                    }
                     ],
                     color: '#ffff44'
                 },
                 { //10-20/m³ orange
                     key: "10-20µg/m³",
                     values: [{
-                            x: sensorValues[0].x,
-                            y: orangeValue
-                        },
-                        {
-                            x: sensorValues[sensorValues.length - 1].x,
-                            y: orangeValue
-                        }
+                        x: sensorValues[0].x,
+                        y: orangeValue
+                    },
+                    {
+                        x: sensorValues[sensorValues.length - 1].x,
+                        y: orangeValue
+                    }
                     ],
                     color: '#ff5500'
                 },
                 { //20-50µg/m³ red
                     key: "20-50µg/m³",
                     values: [{
-                            x: sensorValues[0].x,
-                            y: redValue
-                        },
-                        {
-                            x: sensorValues[sensorValues.length - 1].x,
-                            y: redValue
-                        }
+                        x: sensorValues[0].x,
+                        y: redValue
+                    },
+                    {
+                        x: sensorValues[sensorValues.length - 1].x,
+                        y: redValue
+                    }
                     ],
                     color: '#cc0000'
                 },
                 { //50-100µg/m³ purple
                     key: "50-100µg/m³",
                     values: [{
-                            x: sensorValues[0].x,
-                            y: purpleValue
-                        },
-                        {
-                            x: sensorValues[sensorValues.length - 1].x,
-                            y: purpleValue
-                        }
+                        x: sensorValues[0].x,
+                        y: purpleValue
+                    },
+                    {
+                        x: sensorValues[sensorValues.length - 1].x,
+                        y: purpleValue
+                    }
                     ],
                     color: '#990099'
                 },
                 { //100+µg/m³ maroon
                     key: "100+µg/m³",
                     values: [{
-                            x: sensorValues[0].x,
-                            y: maroonValue
-                        },
-                        {
-                            x: sensorValues[sensorValues.length - 1].x,
-                            y: maroonValue
-                        }
+                        x: sensorValues[0].x,
+                        y: maroonValue
+                    },
+                    {
+                        x: sensorValues[sensorValues.length - 1].x,
+                        y: maroonValue
+                    }
                     ],
                     color: '#aa2626'
                 }
@@ -174,7 +229,7 @@ export default {
             chartData[5].yAxis = 1;
             //this graph function will change the color of the node depending on the value of data.
             nv.addGraph(function () {
-                var maxYValue = Math.max.apply(Math, chartData[0].values.map(function(o) { return o.y; }))
+                var maxYValue = Math.max.apply(Math, chartData[0].values.map(function (o) { return o.y; }))
                 var chart = nv.models.multiChart()
                     .margin({
                         top: 30,
@@ -203,5 +258,7 @@ export default {
                 return chart;
             });
         }
-    }
+    },
+
+
 }
