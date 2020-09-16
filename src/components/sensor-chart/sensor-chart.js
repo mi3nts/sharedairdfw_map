@@ -9,15 +9,15 @@ export default {
         endDate: null,
         dataInterval: ''
     }),
-    created: function () {
+    created: function() {
         this.startDate = this.$moment.utc().add(-24, 'hour').format("YYYY-MM-DD");
         this.endDate = this.$moment.utc().format("YYYY-MM-DD");
     },
-    mounted: function () {
+    mounted: function() {
         this.initChart();
     },
     methods: {
-        initChart: function () {
+        initChart: function() {
             $("#chart2_" + this.sensor.sensor_id).html("<div class='my-4 text-center'>Loading data...</div>");
             sensorData.getChartData(
                 this.sensor.sensor_id, {
@@ -33,60 +33,60 @@ export default {
                 }
             });
         },
-        updateDataInterval: function (value) {
-            this.dataInterval = value
-            var text = 'All data'
-            switch(value) {
+        updateDataInterval: function(value) {
+            this.dataInterval = value;
+            var text = 'All data';
+            switch (value) {
                 case '1 60:60:60':
-                    text = '1 Day'
-                    break
+                    text = '1 Day';
+                    break;
                 case '1:60:60':
-                    text = '1 hour'
-                    break
+                    text = '1 hour';
+                    break;
                 case '30:60':
-                    text = '30 minutes'
-                    break
+                    text = '30 minutes';
+                    break;
                 case '10:60':
-                    text = '10 minutes'
-                    break
+                    text = '10 minutes';
+                    break;
             }
             $("#interval-info").html("Interval: " + text)
         },
-        changeInterval: function (values) {
+        changeInterval: function(values) {
             var length = values.length;
             length = length / 3000;
             length = Math.round(length);
-            
+
             var newValues = [];
             var temp = [];
             var indexJ = 0;
             var average = 0;
-            
-            temp.push({x:values[0].x, y:values[0].y});
-            for(var i = 1; i < values.length; i++){
-                if(temp.length >= length){
+
+            temp.push({ x: values[0].x, y: values[0].y });
+            for (var i = 1; i < values.length; i++) {
+                if (temp.length >= length) {
                     average = 0;
-                    for(indexJ = 0; indexJ < temp.length; indexJ++){
+                    for (indexJ = 0; indexJ < temp.length; indexJ++) {
                         average += temp[indexJ].y;
                     }
                     average = average / temp.length;
-                    newValues.push({x:temp[0].x, y:average});
-                    
+                    newValues.push({ x: temp[0].x, y: average });
+
                     temp = [];
                 }
-                temp.push({x:values[i].x, y:values[i].y});
+                temp.push({ x: values[i].x, y: values[i].y });
             }
-            if(temp.length >= 1){
+            if (temp.length >= 1) {
                 average = 0;
-                for(indexJ = 0; indexJ < temp.length; indexJ++){
+                for (indexJ = 0; indexJ < temp.length; indexJ++) {
                     average += temp[indexJ].y;
                 }
                 average = average / temp.length;
-                newValues.push({x:temp[0].x, y:average});
+                newValues.push({ x: temp[0].x, y: average });
             }
             return newValues;
         },
-        createChart: function (data) {
+        createChart: function(data) {
             //formats the data for the chart
             var sensorValues = [];
             for (var i = 0; i < data.length; i++) {
@@ -95,7 +95,7 @@ export default {
                     y: data[i].pm2_5
                 });
             }
-            if(sensorValues.length > 3000){
+            if (sensorValues.length > 3000) {
                 sensorValues = this.changeInterval(sensorValues);
             }
             var maxYValue = Math.max.apply(Math, sensorValues.map(function(o) { return o.y; }))
@@ -215,7 +215,7 @@ export default {
             chartData[5].yAxis = 1;
 
             var sensor_id_chart = this.sensor.sensor_id
-            nv.addGraph(function () {
+            nv.addGraph(function() {
                 var chart = nv.models.multiChart()
                     .margin({
                         top: 50,
@@ -227,12 +227,12 @@ export default {
                     .yDomain1([0, maxYValue]);
                 chart.legend.updateState(false);
                 chart.xAxis
-                    .tickFormat(function (d) {
+                    .tickFormat(function(d) {
                         return d3.time.format('%b %d %I:%M:%S%p')(new Date(d))
                     })
                     .staggerLabels(true);
                 chart.yAxis1
-                    .tickFormat(function (d) {
+                    .tickFormat(function(d) {
                         return d3.format(',.2f')(d) + 'µg/m³'
                     });
                 d3.select("#chart2_" + sensor_id_chart + " svg")
