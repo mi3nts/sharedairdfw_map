@@ -69,7 +69,7 @@ export default {
                     for(indexJ = 0; indexJ < temp.length; indexJ++){
                         average += temp[indexJ].y;
                     }
-                    average = average / temp.length;
+                    average = average / temp.length ;
                     newValues.push({x:temp[0].x, y:average});
                     
                     temp = [];
@@ -89,11 +89,18 @@ export default {
         createChart: function (data) {
             //formats the data for the chart
             var sensorValues = [];
+            var yavg=0;
+            var counter=0;
             for (var i = 0; i < data.length; i++) {
-                sensorValues.push({
-                    x: this.$moment.utc(data[i].timestamp).local().toDate(),
-                    y: data[i].pm2_5
-                });
+                counter++
+                yavg=yavg+data[i].pm2_5
+                if(counter%120==0){
+                    sensorValues.push({
+                        x: this.$moment.utc(data[i].timestamp).local().toDate(),
+                        y: yavg / 120
+                    });
+                    yavg=0;
+                }
             }
             if(sensorValues.length > 3000){
                 sensorValues = this.changeInterval(sensorValues);
@@ -228,7 +235,7 @@ export default {
                 chart.legend.updateState(false);
                 chart.xAxis
                     .tickFormat(function (d) {
-                        return d3.time.format('%b %d %I:%M:%S%p')(new Date(d))
+                        return d3.time.format('%b %d %I:00:00 %p')(new Date(d))
                     })
                     .staggerLabels(true);
                 chart.yAxis1
