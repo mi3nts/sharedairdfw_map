@@ -26,7 +26,7 @@ export default {
                 }, this.dataInterval
             ).then(response => {
                 if (response.data.length) {
-                    $("#chart2_" + this.sensor.sensor_id).html("<svg> </svg>")
+                    $("#chart2_" + this.sensor.sensor_id).html("<svg> </svg>");
                     this.createChart(response.data);
                 } else {
                     $("#chart2_" + this.sensor.sensor_id).html("<div class='my-4 text-center'>No data available.</div>");
@@ -50,7 +50,7 @@ export default {
                     text = '10 minutes';
                     break;
             }
-            $("#interval-info").html("Interval: " + text)
+            $("#interval-info").html("Interval: " + text);
         },
         changeInterval: function(values) {
             var length = values.length;
@@ -98,7 +98,7 @@ export default {
             if (sensorValues.length > 3000) {
                 sensorValues = this.changeInterval(sensorValues);
             }
-            var maxYValue = Math.max.apply(Math, sensorValues.map(function(o) { return o.y; }))
+            var maxYValue = Math.max.apply(Math, sensorValues.map(function(o) { return o.y; }));
             var yellowValue = 0;
             var orangeValue = 0;
             var redValue = 0;
@@ -214,7 +214,7 @@ export default {
             chartData[5].type = "area";
             chartData[5].yAxis = 1;
 
-            var sensor_id_chart = this.sensor.sensor_id
+            var sensor_id_chart = this.sensor.sensor_id;
             nv.addGraph(function() {
                 var chart = nv.models.multiChart()
                     .margin({
@@ -228,12 +228,12 @@ export default {
                 chart.legend.updateState(false);
                 chart.xAxis
                     .tickFormat(function(d) {
-                        return d3.time.format('%b %d %I:%M:%S%p')(new Date(d))
+                        return d3.time.format('%b %d %I:%M:%S%p')(new Date(d));
                     })
                     .staggerLabels(true);
                 chart.yAxis1
                     .tickFormat(function(d) {
-                        return d3.format(',.2f')(d) + 'µg/m³'
+                        return d3.format(',.2f')(d) + 'µg/m³';
                     });
                 d3.select("#chart2_" + sensor_id_chart + " svg")
                     .datum(chartData)
