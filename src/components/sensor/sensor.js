@@ -12,8 +12,6 @@ export default {
     props: ["spot", "spotName"],
     data: () => ({
         showMore: false,
-        pm2_5: null,
-        pm2: null,
     }),
     //monitoring the change
     watch: {
@@ -26,17 +24,14 @@ export default {
     mounted: function () {
         this.initChart();
         //subscribed to the whole folder of Mints topics
-        console.log(this.$mqtt.subscribe('Mints/#'))
+        //console.log(this.$mqtt.subscribe('#'))
     },
     mqtt: {
-        //subscribe to sensor1 topic
-        "Mints/sensor1"(data) {
-            console.log("This is " + data)
-            /* this.pm2 = data
-            console.log("This is pm2: " + this.pm2)
-            console.log("This is spot 2.5 " + this.spot.pm2_5)
-            this.spot.pm2_5 = data */
-
+        //monitor topic incoming data
+        //naming convention and wilcard reference: https://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices/
+        "+/calibrated"(data) {
+            //console.log("This is " + data)
+            this.updateValues(data)
         }
     },
 
@@ -50,7 +45,7 @@ export default {
                 if (response.data.length) {
                     $("#chart").css('height', '250px').html("<svg> </svg>")
                     this.createChart(response.data);
-                    this.updateValues()
+                    //this.updateValues()
                 } else {
                     $("#chart").css('height', '50px').html("<div class='my-4 text-center'>No data available.</div>");
                 }
@@ -66,36 +61,27 @@ export default {
         closeIt: function () {
             this.$emit('close');
         },
-        getPmValue: function (index) {
-            return this.pm2_5[index]
-        },
-        updateValues: function () {
-            //console.log(data)
+        updateValues: function (response) {
             console.log("Updating values...")
-            //const timer = 
-            setInterval(() => {
-                //querying the endpoint
-                sensorData.getSensorData(this.spot.sensor_id).then(response => {
-                    console.log(response);
-                    //maybe check timestamp to avoid writes
-                    if (response.data != null) {
-                        this.spot.pm2_5 = response.data[0].pm2_5
-                        this.spot.pm1 = response.data[0].pm1
-                        this.spot.pm10 = response.data[0].pm10
-                        this.spot.temperature = response.data[0].temperature
-                        this.spot.humidity = response.data[0].humidity
-                        this.spot.timestamp = response.data[0].timestamp
-                    }
-                    else {
-                        console.log("undefined or null data")
-                    }
+            console.log(response.toString())
+            response = response.toString()
 
+            response = JSON.parse(response)
+            console.log(response)
 
-                })
-
-            }, 30000)
-            //clearInterval(timer);
-
+            //maybe check timestamp to avoid writes
+            if (response != null && response.sensor_id == this.spot.sensor_id) {
+                console.log("im in")
+                this.spot.pm2_5 = response.pm2_5
+                this.spot.pm1 = response.pm1
+                this.spot.pm10 = response.pm10
+                this.spot.temperature = response.temperature
+                this.spot.humidity = response.humidity
+                this.spot.timestamp = response.timestamp
+            }
+            else {
+                console.log("undefined or not the right sensor")
+            }
         },
         createChart: function (data) {
 

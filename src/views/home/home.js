@@ -5,6 +5,15 @@ import openAqData from "../../services/openaq-data";
 import epaData from "../../services/epa-data";
 import Vue from 'vue';
 import vuetify from '../../plugins/vuetify';
+import VueMqtt from 'vue-mqtt';
+
+var userID = "Mints" + parseInt(Math.random() * 100000);
+var options = {
+    clientId: userID,
+    username: process.env.VUE_APP_USERNAME,
+    password: process.env.VUE_APP_PASSWORD,
+}
+Vue.use(VueMqtt, 'mqtts://mqtt.circ.utdallas.edu:8083', options);
 
 /**
  * Main landing page with all map functionality
@@ -116,6 +125,9 @@ export default {
         }
     },
     mounted: function () {
+        //subscribe to the sensor topics
+        console.log(this.$mqtt.subscribe('#'))
+
         // If the page is less than 600px wide, the sidebar starts off hidden
         if ($(window).width() < 600) {
             this.slide();
@@ -156,6 +168,38 @@ export default {
          */
         this.bindIconsToAccordian();
 
+    },
+    mqtt: {
+        '+/calibrated'(data) {
+            data = JSON.parse(data.toString())
+
+            if (data != null) {
+                /*  sensorData.getSensors().then(response => {
+                     var i = 0
+                     response.data.forEach(s => {
+                         sensorData.getSensorLocation(s).then(sensorLocatRes => {
+                             if (sensorLocatRes.data.length &&
+                                 sensorLocatRes.data[0].longitude != null && sensorLocatRes.data[0].latitude != null) {
+                                 sensorData.getSensorName(s).then(sensorNameRes => {
+                                     if (sensorNameRes.data.length && sensorNameRes.data[0].sensor_name != null) {
+                                         sensorData.getSensorData(s).then(sensorResponse => {
+                                             if (sensorResponse.data.length) {
+                                                 sensorResponse.data.id = s;
+                                                 this.sensors.push(sensorResponse.data[0]);
+                                                 this.renderSensor(sensorResponse.data[0], sensorLocatRes.data[0], sensorNameRes.data[0].sensor_name, i++);
+                                             }
+                                         });
+                                     }
+                                 })
+                             }
+                         });
+                     });
+                 }); */
+                //this.renderSensor(sensorResponse.data[0], sensorLocatRes.data[0], sensorNameRes.data[0].sensor_name, i++);
+            }
+
+
+        }
     },
     methods: {
         buildLayers: function () {
@@ -203,7 +247,7 @@ export default {
             );
 
             /** Wind Layer */
-            this.buildWindLayer('Carto Positron', true);
+            this.buildWindLayer('Carto Positron', false);
         },
         windColorScale: function (layerName) {
             var dark = [
@@ -487,7 +531,7 @@ export default {
             var fillColor = timeDiffMinutes > 10 ? '#808080' : this.getMarkerColor(sensor[this.pmType]);
             sensor.marker = L.marker([sensorLocation.latitude, sensorLocation.longitude], {
                 icon: L.divIcon({
-                    className: 'svg-icon',
+                    className: 'svg-icon-' + sensor.sensor_id,
                     html: this.getCircleMarker("#38b5e6", fillColor, 40, parseFloat(sensor[this.pmType]).toFixed(2)),
                     iconAnchor: [20, 10],
                     iconSize: [20, 32],
@@ -577,7 +621,7 @@ export default {
         },
         getCircleMarker(color, fill, size, value) {
             var textColor = this.invertHex(fill);
-            var svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24"><circle fill="${fill}" fill-opacity="0.8" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="${color}" cx="12" cy="12" r="10"></circle><text x="12" y="15" fill="${textColor}" text-anchor="middle" font-family="PT Sans" font-size="8">${value}</text></svg>`;
+            var svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24"><circle fill="${fill}" fill-opacity="0.8" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="${color}" cx="12" cy="12" r="10"></circle><text v-bind x="12" y="15" fill="${textColor}" text-anchor="middle" font-family="PT Sans" font-size="8" >${value}</text></svg>`;
             return svg;
         },
         getSquareMarker(color, fill, size, value) {

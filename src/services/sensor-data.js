@@ -1,7 +1,5 @@
 import Vue from "vue";
-import VueMqtt from 'vue-mqtt';
-var userID = "Mints" + parseInt(Math.random() * 100000);
-Vue.use(VueMqtt, 'ws://localhost:8883', { clientId: userID });
+
 
 /**
  * Data service which provides data from 3rd party API to application.
