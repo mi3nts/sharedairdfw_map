@@ -6,30 +6,30 @@ import Vue from "vue";
  * End point must support CORS.
  */
 export default new Vue({
-    data: function () {
+    data: function() {
         return {
             baseUrl: "https://mintsdata.utdallas.edu:3000"
-        }
+        };
     },
     methods: {
-        getSensors: function () {
+        getSensors: function() {
             return this.$axios.get(this.baseUrl + "/sensor_id_list");
         },
-        getSensorData: function (sensorID) {
+        getSensorData: function(sensorID) {
             return this.$axios.get(this.baseUrl + "/latest/" + sensorID);
         },
-        getSensorLocation: function (sensorID) {
+        getSensorLocation: function(sensorID) {
             return this.$axios.get(this.baseUrl + "/location/" + sensorID);
         },
-        getSensorName: function (sensorID) {
+        getSensorName: function(sensorID) {
             return this.$axios.get(this.baseUrl + "/sensorNameOf/" + sensorID);
         },
-        getChartData: function (sensorID, range, interval) {
+        getChartData: function(sensorID, range, interval) {
             if (interval == '')
                 return this.$axios.get(this.baseUrl + `/data/pm2_5/${sensorID}/${range.start}/${range.end}`);
             return this.$axios.get(this.baseUrl + `/data/pm2_5/${sensorID}/${range.start}/${range.end}/${interval}`);
         },
-        getWindData: function () {
+        getWindData: function() {
             return this.$axios.get(this.baseUrl + "/wind_data/latest");
         }
     }

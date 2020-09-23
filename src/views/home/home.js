@@ -12,7 +12,7 @@ var options = {
     clientId: userID,
     username: process.env.VUE_APP_USERNAME,
     password: process.env.VUE_APP_PASSWORD,
-}
+};
 Vue.use(VueMqtt, 'mqtts://mqtt.circ.utdallas.edu:8083', options);
 
 /**
@@ -23,7 +23,7 @@ export default {
     components: {
         Sensor
     },
-    data: function () {
+    data: function() {
         return {
             map: null,
             /** Currently clicked sensor is stored here */
@@ -61,62 +61,62 @@ export default {
             purpleAirGroup: L.layerGroup(),
             epaGroup: L.layerGroup(),
             pollutionGroup: L.layerGroup(),
-        }
+        };
     },
     watch: {
-        'pmType': function () {
-            this.refreshIcons()
+        'pmType': function() {
+            this.refreshIcons();
         },
-        'openAQLayer': function (newValue) {
+        'openAQLayer': function(newValue) {
             if (newValue) {
-                this.openAQGroup.addTo(this.map)
+                this.openAQGroup.addTo(this.map);
             } else {
                 this.map.removeLayer(this.openAQGroup);
             }
         },
-        'purpleAirLayer': function (newValue) {
+        'purpleAirLayer': function(newValue) {
             if (newValue) {
-                this.purpleAirGroup.addTo(this.map)
+                this.purpleAirGroup.addTo(this.map);
             } else {
                 this.map.removeLayer(this.purpleAirGroup);
             }
         },
-        'pollutionLayer': function (newValue) {
+        'pollutionLayer': function(newValue) {
             if (newValue) {
-                this.pollutionGroup.addTo(this.map)
+                this.pollutionGroup.addTo(this.map);
             } else {
                 this.map.removeLayer(this.pollutionGroup);
             }
         },
-        'epaLayer': function (newValue) {
+        'epaLayer': function(newValue) {
             if (newValue) {
-                this.epaGroup.addTo(this.map)
+                this.epaGroup.addTo(this.map);
             } else {
                 this.map.removeLayer(this.epaGroup);
             }
             this.openAQLayer = newValue;
         },
-        'epaType': function () {
+        'epaType': function() {
             if (this.epaLayer) {
                 this.loadEPA(true);
                 this.loadOpenAQ(true);
             }
         },
-        'sensorLayer': function (newValue) {
+        'sensorLayer': function(newValue) {
             if (newValue) {
-                this.sensorGroup.addTo(this.map)
+                this.sensorGroup.addTo(this.map);
             } else {
                 this.map.removeLayer(this.sensorGroup);
             }
         },
-        'radarLayer': function (newValue) {
+        'radarLayer': function(newValue) {
             if (newValue) {
-                this.layers.radar.addTo(this.map)
+                this.layers.radar.addTo(this.map);
             } else {
                 this.map.removeLayer(this.layers.radar);
             }
         },
-        'windLayer': function (newValue) {
+        'windLayer': function(newValue) {
             if (newValue) {
                 this.layers.wind_layer.addTo(this.map);
             } else {
@@ -124,9 +124,9 @@ export default {
             }
         }
     },
-    mounted: function () {
+    mounted: function() {
         //subscribe to the sensor topics
-        console.log(this.$mqtt.subscribe('#'))
+        console.log(this.$mqtt.subscribe('#'));
 
         // If the page is less than 600px wide, the sidebar starts off hidden
         if ($(window).width() < 600) {
@@ -170,8 +170,8 @@ export default {
 
     },
     mqtt: {
-        '+/calibrated'(data) {
-            data = JSON.parse(data.toString())
+        '+/calibrated' (data) {
+            data = JSON.parse(data.toString());
 
             if (data != null) {
                 /*  sensorData.getSensors().then(response => {
@@ -202,7 +202,7 @@ export default {
         }
     },
     methods: {
-        buildLayers: function () {
+        buildLayers: function() {
             /** Bright Layer */
             this.layers.bright = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
@@ -216,9 +216,9 @@ export default {
                 "http://{s}.sm.mapstack.stamen.com/" +
                 "(toner-lite,$fff[difference],$fff[@23],$fff[hsl-saturation@20])/" +
                 "{z}/{x}/{y}.png", {
-                attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, ' +
-                    'NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
-            }
+                    attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, ' +
+                        'NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
+                }
             );
             this.layerControl.addBaseLayer(this.layers.dark_mode, "Dark Mode");
 
@@ -238,18 +238,18 @@ export default {
             /** Radar Layer */
             this.layers.radar = L.tileLayer.wms(
                 "http://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0r.cgi", {
-                layers: 'nexrad-n0r',
-                format: 'image/png',
-                transparent: true,
-                attribution: "Weather data &copy; 2015 IEM Nexrad",
-                zIndex: 1000
-            }
+                    layers: 'nexrad-n0r',
+                    format: 'image/png',
+                    transparent: true,
+                    attribution: "Weather data &copy; 2015 IEM Nexrad",
+                    zIndex: 1000
+                }
             );
 
             /** Wind Layer */
             this.buildWindLayer('Carto Positron', false);
         },
-        windColorScale: function (layerName) {
+        windColorScale: function(layerName) {
             var dark = [
                 "rgb(36,104, 180)",
                 "rgb(60,157, 194)",
@@ -293,7 +293,7 @@ export default {
                 return light;
             }
         },
-        buildWindLayer: function (layerName, addWhenready) {
+        buildWindLayer: function(layerName, addWhenready) {
             sensorData.getWindData().then(response => {
                 this.layers.wind_layer = L.velocityLayer({
                     displayValues: true,
@@ -311,27 +311,27 @@ export default {
                     colorScale: this.windColorScale(layerName)
                 });
                 this.wind.data_time = response.data[0].recorded_time.replace(".000Z", "");
-                this.wind.updated_time = response.data[0].header.refTime.replace(".000Z", "")
+                this.wind.updated_time = response.data[0].header.refTime.replace(".000Z", "");
                 if (addWhenready) {
                     this.windLayer = true;
                 }
             });
         },
-        bindIconsToAccordian: function () {
+        bindIconsToAccordian: function() {
             $('#PurpleAir').append(this.getPentagonMarker("#9370DB", "#ffff9e", 25, ''));
             $('#EPA').append(this.getSquareMarker("#6B8E23", "#ffff9e", 25, ''));
             //$('#EPA').append(this.getHexagonMarker("#66CDAA", "#ffff9e", 25, ''));
             $('#DFW').append(this.getCircleMarker("#38b5e6", "#ffff9e", 25, ''));
             $('#pollution').append(this.getCircleMarker("#38b5e6", "#000000", 20, ''));
         },
-        initMap: function () {
+        initMap: function() {
             this.map = L.map('map', {
                 center: [32.89746164575043, -97.04086303710938],
                 zoom: 10,
                 layers: this.layers.bright,
                 zoomControl: false
             });
-            window["lmap"] = this.map;
+            window.lmap = this.map;
             this.map.addControl(L.control.zoom({
                 position: 'topright'
             }));
@@ -347,7 +347,7 @@ export default {
                 this.buildWindLayer(event.name, previousValue);
             });
         },
-        loadPurpleAir: function () {
+        loadPurpleAir: function() {
             purpleAirData.getSensorData(purpleAirData.sensors.join("|")).then(response => {
                 response.data.results.forEach(result => {
                     /** They have nested devices. So, let's consider parent only */
@@ -357,14 +357,14 @@ export default {
                 });
             });
         },
-        loadPollution: function () {
+        loadPollution: function() {
             this.$axios.get("/json/PollutionBurdenByCouncilDistrict.json").then(response => {
                 response.data.forEach(item => {
                     this.renderPollution(item);
                 });
             });
         },
-        renderPollution: function (location) {
+        renderPollution: function(location) {
             location.marker = L.marker([location.Latitude, location.Longitude], {
                 icon: L.divIcon({
                     className: 'svg-icon',
@@ -373,18 +373,18 @@ export default {
                     iconSize: [20, 32],
                     popupAnchor: [0, -30]
                 })
-            })
+            });
             location.marker.addTo(this.pollutionGroup);
             var popup = "<div style='font-size:14px'>";
             popup += "<div style='text-align:center; font-weight:bold;'>" + location['Industry Name'] + " </div><br>";
-            popup += "<div style='text-align:center;'>" + location['Address'] + " </div><br>";
+            popup += "<div style='text-align:center;'>" + location.Address + " </div><br>";
             popup += "<li> SOX : " + location['Permitted PM (TPY)'] + " </li><br>";
             popup += "<li> PM : " + location['Permitted SOx (TPY)'] + " </li><br>";
             popup += "<li> Voc : " + location['Permitted VoC (TPY)'] + " </li><br>";
             popup += "</div>";
             location.marker.bindPopup(popup);
         },
-        renderPurpleAir: function (location) {
+        renderPurpleAir: function(location) {
             location.marker = L.marker([location.Lat, location.Lon], {
                 icon: L.divIcon({
                     className: 'svg-icon',
@@ -393,7 +393,7 @@ export default {
                     iconSize: [20, 32],
                     popupAnchor: [0, -30]
                 })
-            })
+            });
             location.marker.addTo(this.purpleAirGroup);
             var popup = "<div style='font-size:14px'>";
             popup += "<div style='text-align:center; font-weight:bold'>" + location.Label + " </div><br>";
@@ -417,7 +417,7 @@ export default {
             popup += "</div>";
             location.marker.bindPopup(popup);
         },
-        loadOpenAQ: function (refresh) {
+        loadOpenAQ: function(refresh) {
             if (refresh) {
                 this.map.removeLayer(this.openAQGroup);
                 this.openAQGroup = L.layerGroup();
@@ -429,7 +429,7 @@ export default {
                 });
             });
         },
-        renderOpenAQ: function (location) {
+        renderOpenAQ: function(location) {
             var parameter = this.epaType.toLocaleLowerCase();
             location.measurements.forEach((measurement) => {
                 if (parameter != measurement.parameter) {
@@ -450,7 +450,7 @@ export default {
                         iconSize: [20, 32],
                         popupAnchor: [0, -30]
                     })
-                })
+                });
                 location.marker.addTo(this.openAQGroup);
                 var popup = "<div style='font-size:14px'>";
                 popup += "<div style='text-align:center; font-weight:bold'>" + location.location + " </div><br>";
@@ -464,7 +464,7 @@ export default {
                 location.marker.bindPopup(popup);
             });
         },
-        loadEPA: function (refresh) {
+        loadEPA: function(refresh) {
             if (refresh) {
                 this.map.removeLayer(this.epaGroup);
                 this.epaGroup = L.layerGroup();
@@ -473,14 +473,14 @@ export default {
             epaData.getLatestCityData(this.epaType).then(response => {
                 response.data.forEach(result => {
                     this.renderEPA(result);
-                })
+                });
             });
         },
-        renderEPA: function (location) {
+        renderEPA: function(location) {
             var fillColor = "#66CDAA"; //O3 colors to be determined
             var PM_value = "";
             if (location.Parameter == "PM2.5") {
-                fillColor = this.getMarkerColor(location.Value)
+                fillColor = this.getMarkerColor(location.Value);
                 PM_value = location.Value;
             }
             location.marker = L.marker([location.Latitude, location.Longitude], {
@@ -492,7 +492,7 @@ export default {
                     iconSize: [20, 32],
                     popupAnchor: [0, -30]
                 })
-            })
+            });
             location.marker.addTo(this.epaGroup);
             var popup = "<div style='font-size:14px'>";
             popup += "<div style='text-align:center; font-weight:bold'>" + location.SiteName + " </div><br>";
@@ -501,9 +501,9 @@ export default {
             popup += "</div>";
             location.marker.bindPopup(popup);
         },
-        loadData: function () {
+        loadData: function() {
             sensorData.getSensors().then(response => {
-                var i = 0
+                var i = 0;
                 response.data.forEach(s => {
                     sensorData.getSensorLocation(s).then(sensorLocatRes => {
                         if (sensorLocatRes.data.length &&
@@ -518,7 +518,7 @@ export default {
                                         }
                                     });
                                 }
-                            })
+                            });
                         }
                     });
                 });
@@ -526,7 +526,7 @@ export default {
         },
 
         // single click pop up information
-        renderSensor: function (sensor, sensorLocation, sensorName, zIndexPriority) {
+        renderSensor: function(sensor, sensorLocation, sensorName, zIndexPriority) {
             var timeDiffMinutes = this.$moment.duration(this.$moment.utc().diff(this.$moment.utc(sensor.timestamp))).asMinutes();
             var fillColor = timeDiffMinutes > 10 ? '#808080' : this.getMarkerColor(sensor[this.pmType]);
             sensor.marker = L.marker([sensorLocation.latitude, sensorLocation.longitude], {
@@ -556,7 +556,7 @@ export default {
                 this.selectedSensor = sensor;
             });
 
-            sensor.marker.on('popupopen', function (e) {
+            sensor.marker.on('popupopen', function(e) {
                 // Create new pop up vue component and...
                 var newPopup = new Vue({
                     vuetify,
@@ -566,19 +566,19 @@ export default {
                             spotName: sensorName
                         }
                     })
-                })
-                newPopup.$mount("#flyCard")
+                });
+                newPopup.$mount("#flyCard");
                 // ...track it in the marker component for destruction later
-                e.popup._source.sensorPopup = newPopup
+                e.popup._source.sensorPopup = newPopup;
             });
 
             // Destroy pop up dialogue after the user closes it
-            sensor.marker.on('popupclose', function (e) {
-                e.popup._source.sensorPopup.$destroy("#flyCard")
-            })
+            sensor.marker.on('popupclose', function(e) {
+                e.popup._source.sensorPopup.$destroy("#flyCard");
+            });
         },
 
-        buildMarkerIcon: function (sensor) {
+        buildMarkerIcon: function(sensor) {
             /** If you change SCG marker,
              *  you need to fine tune  iconAnchor, iconSize & popupAnchor as well*/
             return L.divIcon({
@@ -587,7 +587,7 @@ export default {
                 iconAnchor: [20, 10],
                 iconSize: [20, 32],
                 popupAnchor: [0, -30]
-            })
+            });
         },
 
         refreshIcons() {
@@ -598,7 +598,7 @@ export default {
             });
         },
         getMarkerColor(PM) {
-            if (PM >= 0 && PM <= 10) return "#ffff9e" //"#ffff66";
+            if (PM >= 0 && PM <= 10) return "#ffff9e"; //"#ffff66";
             else if (PM > 10 && PM <= 20) return "#ff6600";
             else if (PM > 20 && PM <= 50) return "#ff5534"; //"#cc0000";
             else if (PM > 50 && PM <= 100) return "#D34FD0"; //"#990099";
@@ -616,8 +616,8 @@ export default {
                 }, "slow").addClass('visible');
             }
         },
-        invertHex: function (hex) {
-            return (Number(`0x1${hex}`) ^ 0xFFFFFF).toString(16).substr(1).toUpperCase()
+        invertHex: function(hex) {
+            return (Number(`0x1${hex}`) ^ 0xFFFFFF).toString(16).substr(1).toUpperCase();
         },
         getCircleMarker(color, fill, size, value) {
             var textColor = this.invertHex(fill);

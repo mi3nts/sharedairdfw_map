@@ -1,5 +1,5 @@
 import sensorData from "../../services/sensor-data";
-import SensorChart from "../sensor-chart"
+import SensorChart from "../sensor-chart";
 
 /**
  * This is stand alone component showing sensor data only. 
@@ -15,13 +15,13 @@ export default {
     }),
     //monitoring the change
     watch: {
-        'spot': function () {
+        'spot': function() {
             this.initChart();
         },
     },
 
-    created: function () { },
-    mounted: function () {
+    created: function() {},
+    mounted: function() {
         this.initChart();
         //subscribed to the whole folder of Mints topics
         //console.log(this.$mqtt.subscribe('#'))
@@ -29,21 +29,21 @@ export default {
     mqtt: {
         //monitor topic incoming data
         //naming convention and wilcard reference: https://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices/
-        "+/calibrated"(data) {
+        "+/calibrated" (data) {
             //console.log("This is " + data)
-            this.updateValues(data)
+            this.updateValues(data);
         }
     },
 
     methods: {
-        initChart: function () {
+        initChart: function() {
             $("#chart").css('height', '50px').html("<div class='my-4 text-center'>Loading data...</div>");
             sensorData.getChartData(this.spot.sensor_id, {
                 start: this.$moment.utc().add(-24, 'hour').toISOString(),
                 end: this.$moment.utc().toISOString(),
             }, '').then(response => {
                 if (response.data.length) {
-                    $("#chart").css('height', '250px').html("<svg> </svg>")
+                    $("#chart").css('height', '250px').html("<svg> </svg>");
                     this.createChart(response.data);
                     //this.updateValues()
                 } else {
@@ -52,38 +52,37 @@ export default {
             });
 
         },
-        formatNumber: function (num) {
+        formatNumber: function(num) {
             return Number(num).toFixed(1);
         },
-        spotTemperature: function () {
+        spotTemperature: function() {
             return (this.spot.temperature * (9 / 5)) + 32;
         },
-        closeIt: function () {
+        closeIt: function() {
             this.$emit('close');
         },
-        updateValues: function (response) {
-            console.log("Updating values...")
-            console.log(response.toString())
-            response = response.toString()
+        updateValues: function(response) {
+            console.log("Updating values...");
+            console.log(response.toString());
+            response = response.toString();
 
-            response = JSON.parse(response)
-            console.log(response)
+            response = JSON.parse(response);
+            console.log(response);
 
             //maybe check timestamp to avoid writes
             if (response != null && response.sensor_id == this.spot.sensor_id) {
-                console.log("im in")
-                this.spot.pm2_5 = response.pm2_5
-                this.spot.pm1 = response.pm1
-                this.spot.pm10 = response.pm10
-                this.spot.temperature = response.temperature
-                this.spot.humidity = response.humidity
-                this.spot.timestamp = response.timestamp
-            }
-            else {
-                console.log("undefined or not the right sensor")
+                console.log("im in");
+                this.spot.pm2_5 = response.pm2_5;
+                this.spot.pm1 = response.pm1;
+                this.spot.pm10 = response.pm10;
+                this.spot.temperature = response.temperature;
+                this.spot.humidity = response.humidity;
+                this.spot.timestamp = response.timestamp;
+            } else {
+                console.log("undefined or not the right sensor");
             }
         },
-        createChart: function (data) {
+        createChart: function(data) {
 
             //formats the data for the chart
             var sensorValues = [];
@@ -97,7 +96,7 @@ export default {
 
 
             //define values of different color
-            var maxYValue = Math.max.apply(Math, sensorValues.map(function (o) { return o.y; }))
+            var maxYValue = Math.max.apply(Math, sensorValues.map(function(o) { return o.y; }));
             var yellowValue = 0;
             var orangeValue = 0;
             var redValue = 0;
@@ -135,65 +134,65 @@ export default {
                 { //0-10µg/m³ yellow
                     key: "0-10µg/m³",
                     values: [{
-                        x: sensorValues[0].x,
-                        y: yellowValue
-                    },
-                    {
-                        x: sensorValues[sensorValues.length - 1].x,
-                        y: yellowValue
-                    }
+                            x: sensorValues[0].x,
+                            y: yellowValue
+                        },
+                        {
+                            x: sensorValues[sensorValues.length - 1].x,
+                            y: yellowValue
+                        }
                     ],
                     color: '#ffff44'
                 },
                 { //10-20/m³ orange
                     key: "10-20µg/m³",
                     values: [{
-                        x: sensorValues[0].x,
-                        y: orangeValue
-                    },
-                    {
-                        x: sensorValues[sensorValues.length - 1].x,
-                        y: orangeValue
-                    }
+                            x: sensorValues[0].x,
+                            y: orangeValue
+                        },
+                        {
+                            x: sensorValues[sensorValues.length - 1].x,
+                            y: orangeValue
+                        }
                     ],
                     color: '#ff5500'
                 },
                 { //20-50µg/m³ red
                     key: "20-50µg/m³",
                     values: [{
-                        x: sensorValues[0].x,
-                        y: redValue
-                    },
-                    {
-                        x: sensorValues[sensorValues.length - 1].x,
-                        y: redValue
-                    }
+                            x: sensorValues[0].x,
+                            y: redValue
+                        },
+                        {
+                            x: sensorValues[sensorValues.length - 1].x,
+                            y: redValue
+                        }
                     ],
                     color: '#cc0000'
                 },
                 { //50-100µg/m³ purple
                     key: "50-100µg/m³",
                     values: [{
-                        x: sensorValues[0].x,
-                        y: purpleValue
-                    },
-                    {
-                        x: sensorValues[sensorValues.length - 1].x,
-                        y: purpleValue
-                    }
+                            x: sensorValues[0].x,
+                            y: purpleValue
+                        },
+                        {
+                            x: sensorValues[sensorValues.length - 1].x,
+                            y: purpleValue
+                        }
                     ],
                     color: '#990099'
                 },
                 { //100+µg/m³ maroon
                     key: "100+µg/m³",
                     values: [{
-                        x: sensorValues[0].x,
-                        y: maroonValue
-                    },
-                    {
-                        x: sensorValues[sensorValues.length - 1].x,
-                        y: maroonValue
-                    }
+                            x: sensorValues[0].x,
+                            y: maroonValue
+                        },
+                        {
+                            x: sensorValues[sensorValues.length - 1].x,
+                            y: maroonValue
+                        }
                     ],
                     color: '#aa2626'
                 }
@@ -214,8 +213,8 @@ export default {
             chartData[5].type = "area";
             chartData[5].yAxis = 1;
             //this graph function will change the color of the node depending on the value of data.
-            nv.addGraph(function () {
-                var maxYValue = Math.max.apply(Math, chartData[0].values.map(function (o) { return o.y; }))
+            nv.addGraph(function() {
+                var maxYValue = Math.max.apply(Math, chartData[0].values.map(function(o) { return o.y; }));
                 var chart = nv.models.multiChart()
                     .margin({
                         top: 30,
@@ -227,13 +226,13 @@ export default {
                     .color(d3.scale.category10().range())
                     .yDomain1([0, maxYValue]);
                 chart.xAxis
-                    .tickFormat(function (d) {
-                        return d3.time.format('%I:%M%p')(new Date(d))
+                    .tickFormat(function(d) {
+                        return d3.time.format('%I:%M%p')(new Date(d));
                     })
                     .tickValues([]);
                 chart.yAxis1
-                    .tickFormat(function (d) {
-                        return d3.format(',.1f')(d) + 'µg/m³'
+                    .tickFormat(function(d) {
+                        return d3.format(',.1f')(d) + 'µg/m³';
                     })
                     .showMaxMin(false);
                 d3.select('#chart svg')
@@ -247,4 +246,4 @@ export default {
     },
 
 
-}
+};

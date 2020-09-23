@@ -4,22 +4,22 @@ import Vue from "vue";
  * End point must support CORS.
  */
 export default new Vue({
-    data: function () {
+    data: function() {
         return {
             baseUrl: "https://api.openaq.org/v1",
             city: "Dallas-Fort Worth-Arlington"
-        }
+        };
     },
     methods: {
         /** 
          * See here about more fine tuning of data 
          * https://docs.openaq.org/#api-Latest-GetLatest 
          * */
-        getLatestCityData: function () {
+        getLatestCityData: function() {
             return this.$axios.get(this.baseUrl + "/latest?city=" + this.city);
-		},
-		getHistoricalCityData: function () {
+        },
+        getHistoricalCityData: function() {
             return this.$axios.get(this.baseUrl + "/measurements?city=" + this.city);
         },
     }
-})
+});
