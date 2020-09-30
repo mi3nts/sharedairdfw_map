@@ -6,6 +6,7 @@ import epaData from "../../services/epa-data";
 import Vue from 'vue';
 import vuetify from '../../plugins/vuetify';
 import VueMqtt from 'vue-mqtt';
+//import sensor from "../../components/sensor/sensor";
 
 var userID = "Mints" + parseInt(Math.random() * 100000);
 var options = {
@@ -23,7 +24,7 @@ export default {
     components: {
         Sensor
     },
-    data: function() {
+    data: function () {
         return {
             map: null,
             /** Currently clicked sensor is stored here */
@@ -64,31 +65,41 @@ export default {
         };
     },
     watch: {
-        'pmType': function() {
+        'pmType': function () {
             this.refreshIcons();
         },
-        'openAQLayer': function(newValue) {
+        /* sensors: {
+            //property of watch API,  https://vuejs.org/v2/api/#vm-watch
+            //deep: true,
+            // We have to move our method to a handler field
+            handler: function (oldData, NewData) {
+                console.log(oldData, "\tTrying to change the value => ", NewData)
+
+            }
+        }, */
+
+        'openAQLayer': function (newValue) {
             if (newValue) {
                 this.openAQGroup.addTo(this.map);
             } else {
                 this.map.removeLayer(this.openAQGroup);
             }
         },
-        'purpleAirLayer': function(newValue) {
+        'purpleAirLayer': function (newValue) {
             if (newValue) {
                 this.purpleAirGroup.addTo(this.map);
             } else {
                 this.map.removeLayer(this.purpleAirGroup);
             }
         },
-        'pollutionLayer': function(newValue) {
+        'pollutionLayer': function (newValue) {
             if (newValue) {
                 this.pollutionGroup.addTo(this.map);
             } else {
                 this.map.removeLayer(this.pollutionGroup);
             }
         },
-        'epaLayer': function(newValue) {
+        'epaLayer': function (newValue) {
             if (newValue) {
                 this.epaGroup.addTo(this.map);
             } else {
@@ -96,27 +107,27 @@ export default {
             }
             this.openAQLayer = newValue;
         },
-        'epaType': function() {
+        'epaType': function () {
             if (this.epaLayer) {
                 this.loadEPA(true);
                 this.loadOpenAQ(true);
             }
         },
-        'sensorLayer': function(newValue) {
+        'sensorLayer': function (newValue) {
             if (newValue) {
                 this.sensorGroup.addTo(this.map);
             } else {
                 this.map.removeLayer(this.sensorGroup);
             }
         },
-        'radarLayer': function(newValue) {
+        'radarLayer': function (newValue) {
             if (newValue) {
                 this.layers.radar.addTo(this.map);
             } else {
                 this.map.removeLayer(this.layers.radar);
             }
         },
-        'windLayer': function(newValue) {
+        'windLayer': function (newValue) {
             if (newValue) {
                 this.layers.wind_layer.addTo(this.map);
             } else {
@@ -124,7 +135,7 @@ export default {
             }
         }
     },
-    mounted: function() {
+    mounted: function () {
         //subscribe to the sensor topics
         console.log(this.$mqtt.subscribe('#'));
 
@@ -167,42 +178,50 @@ export default {
          * Bind icons to accordions
          */
         this.bindIconsToAccordian();
-
     },
     mqtt: {
-        '+/calibrated' (data) {
-            data = JSON.parse(data.toString());
+        '+/calibrated'(payload) {
 
-            if (data != null) {
-                /*  sensorData.getSensors().then(response => {
-                     var i = 0
-                     response.data.forEach(s => {
-                         sensorData.getSensorLocation(s).then(sensorLocatRes => {
-                             if (sensorLocatRes.data.length &&
-                                 sensorLocatRes.data[0].longitude != null && sensorLocatRes.data[0].latitude != null) {
-                                 sensorData.getSensorName(s).then(sensorNameRes => {
-                                     if (sensorNameRes.data.length && sensorNameRes.data[0].sensor_name != null) {
-                                         sensorData.getSensorData(s).then(sensorResponse => {
-                                             if (sensorResponse.data.length) {
-                                                 sensorResponse.data.id = s;
-                                                 this.sensors.push(sensorResponse.data[0]);
-                                                 this.renderSensor(sensorResponse.data[0], sensorLocatRes.data[0], sensorNameRes.data[0].sensor_name, i++);
-                                             }
-                                         });
-                                     }
-                                 })
-                             }
-                         });
-                     });
-                 }); */
-                //this.renderSensor(sensorResponse.data[0], sensorLocatRes.data[0], sensorNameRes.data[0].sensor_name, i++);
+            if (payload != null) {
+                //possibly do more validation on the data
+                //console.log(payload.toString())
+                if (JSON.parse(payload.toString())) {
+                    payload = JSON.parse(payload.toString());
+                    this.redrawSensors(payload)
+                }
+                else {
+                    //covering the NaN issue
+                    //var latitude = this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data.latitude;
+                    //var longitude = this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data.longitude;
+                    //payload = JSON.stringify(payload).replace('"NaN"',)
+                }
+                if (this.$set(this.sensors, this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data, payload)) {
+                    console.log(this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id }))
+                    console.log(this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data, "=>", payload)
+
+                }
+
             }
 
 
         }
     },
     methods: {
-        buildLayers: function() {
+        redrawSensors(payload) {
+            //modifying the DOM according to the received data
+            var timeDiffMinutes = this.$moment.duration(this.$moment.utc().diff(this.$moment.utc(payload.timestamp))).asMinutes();
+            var fillColor = timeDiffMinutes > 10 ? '#808080' : this.getMarkerColor(payload[this.pmType]);
+            this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data.marker.setIcon(
+                L.divIcon({
+                    className: 'svg-icon-' + payload.sensor_id,
+                    html: this.getCircleMarker("#38b5e6", fillColor, 40, parseFloat(payload[this.pmType]).toFixed(2)),
+                    iconAnchor: [20, 10],
+                    iconSize: [20, 32],
+                    popupAnchor: [0, -30]
+                }))
+
+        },
+        buildLayers: function () {
             /** Bright Layer */
             this.layers.bright = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
@@ -216,9 +235,9 @@ export default {
                 "http://{s}.sm.mapstack.stamen.com/" +
                 "(toner-lite,$fff[difference],$fff[@23],$fff[hsl-saturation@20])/" +
                 "{z}/{x}/{y}.png", {
-                    attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, ' +
-                        'NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
-                }
+                attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, ' +
+                    'NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
+            }
             );
             this.layerControl.addBaseLayer(this.layers.dark_mode, "Dark Mode");
 
@@ -238,18 +257,18 @@ export default {
             /** Radar Layer */
             this.layers.radar = L.tileLayer.wms(
                 "http://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0r.cgi", {
-                    layers: 'nexrad-n0r',
-                    format: 'image/png',
-                    transparent: true,
-                    attribution: "Weather data &copy; 2015 IEM Nexrad",
-                    zIndex: 1000
-                }
+                layers: 'nexrad-n0r',
+                format: 'image/png',
+                transparent: true,
+                attribution: "Weather data &copy; 2015 IEM Nexrad",
+                zIndex: 1000
+            }
             );
 
             /** Wind Layer */
             this.buildWindLayer('Carto Positron', false);
         },
-        windColorScale: function(layerName) {
+        windColorScale: function (layerName) {
             var dark = [
                 "rgb(36,104, 180)",
                 "rgb(60,157, 194)",
@@ -293,7 +312,7 @@ export default {
                 return light;
             }
         },
-        buildWindLayer: function(layerName, addWhenready) {
+        buildWindLayer: function (layerName, addWhenready) {
             sensorData.getWindData().then(response => {
                 this.layers.wind_layer = L.velocityLayer({
                     displayValues: true,
@@ -317,14 +336,14 @@ export default {
                 }
             });
         },
-        bindIconsToAccordian: function() {
+        bindIconsToAccordian: function () {
             $('#PurpleAir').append(this.getPentagonMarker("#9370DB", "#ffff9e", 25, ''));
             $('#EPA').append(this.getSquareMarker("#6B8E23", "#ffff9e", 25, ''));
             //$('#EPA').append(this.getHexagonMarker("#66CDAA", "#ffff9e", 25, ''));
             $('#DFW').append(this.getCircleMarker("#38b5e6", "#ffff9e", 25, ''));
             $('#pollution').append(this.getCircleMarker("#38b5e6", "#000000", 20, ''));
         },
-        initMap: function() {
+        initMap: function () {
             this.map = L.map('map', {
                 center: [32.89746164575043, -97.04086303710938],
                 zoom: 10,
@@ -347,7 +366,7 @@ export default {
                 this.buildWindLayer(event.name, previousValue);
             });
         },
-        loadPurpleAir: function() {
+        loadPurpleAir: function () {
             purpleAirData.getSensorData(purpleAirData.sensors.join("|")).then(response => {
                 response.data.results.forEach(result => {
                     /** They have nested devices. So, let's consider parent only */
@@ -357,14 +376,14 @@ export default {
                 });
             });
         },
-        loadPollution: function() {
+        loadPollution: function () {
             this.$axios.get("/json/PollutionBurdenByCouncilDistrict.json").then(response => {
                 response.data.forEach(item => {
                     this.renderPollution(item);
                 });
             });
         },
-        renderPollution: function(location) {
+        renderPollution: function (location) {
             location.marker = L.marker([location.Latitude, location.Longitude], {
                 icon: L.divIcon({
                     className: 'svg-icon',
@@ -384,7 +403,7 @@ export default {
             popup += "</div>";
             location.marker.bindPopup(popup);
         },
-        renderPurpleAir: function(location) {
+        renderPurpleAir: function (location) {
             location.marker = L.marker([location.Lat, location.Lon], {
                 icon: L.divIcon({
                     className: 'svg-icon',
@@ -417,7 +436,7 @@ export default {
             popup += "</div>";
             location.marker.bindPopup(popup);
         },
-        loadOpenAQ: function(refresh) {
+        loadOpenAQ: function (refresh) {
             if (refresh) {
                 this.map.removeLayer(this.openAQGroup);
                 this.openAQGroup = L.layerGroup();
@@ -429,7 +448,7 @@ export default {
                 });
             });
         },
-        renderOpenAQ: function(location) {
+        renderOpenAQ: function (location) {
             var parameter = this.epaType.toLocaleLowerCase();
             location.measurements.forEach((measurement) => {
                 if (parameter != measurement.parameter) {
@@ -464,7 +483,7 @@ export default {
                 location.marker.bindPopup(popup);
             });
         },
-        loadEPA: function(refresh) {
+        loadEPA: function (refresh) {
             if (refresh) {
                 this.map.removeLayer(this.epaGroup);
                 this.epaGroup = L.layerGroup();
@@ -476,7 +495,7 @@ export default {
                 });
             });
         },
-        renderEPA: function(location) {
+        renderEPA: function (location) {
             var fillColor = "#66CDAA"; //O3 colors to be determined
             var PM_value = "";
             if (location.Parameter == "PM2.5") {
@@ -501,7 +520,7 @@ export default {
             popup += "</div>";
             location.marker.bindPopup(popup);
         },
-        loadData: function() {
+        loadData: function () {
             sensorData.getSensors().then(response => {
                 var i = 0;
                 response.data.forEach(s => {
@@ -513,8 +532,13 @@ export default {
                                     sensorData.getSensorData(s).then(sensorResponse => {
                                         if (sensorResponse.data.length) {
                                             sensorResponse.data.id = s;
-                                            this.sensors.push(sensorResponse.data[0]);
-                                            this.renderSensor(sensorResponse.data[0], sensorLocatRes.data[0], sensorNameRes.data[0].sensor_name, i++);
+                                            this.sensors.push({
+                                                data: sensorResponse.data[0],
+                                                location: sensorLocatRes.data[0],
+                                                name: sensorNameRes.data[0].sensor_name
+                                            });
+                                            this.renderSensor(this.sensors[this.sensors.length - 1].data, this.sensors[this.sensors.length - 1].location, this.sensors[this.sensors.length - 1].name, i++);
+                                            //this.renderSensor(sensorResponse.data[0], sensorLocatRes.data[0], sensorNameRes.data[0].sensor_name, i++);
                                         }
                                     });
                                 }
@@ -523,10 +547,11 @@ export default {
                     });
                 });
             });
-        },
 
+
+        },
         // single click pop up information
-        renderSensor: function(sensor, sensorLocation, sensorName, zIndexPriority) {
+        renderSensor: function (sensor, sensorLocation, sensorName, zIndexPriority) {
             var timeDiffMinutes = this.$moment.duration(this.$moment.utc().diff(this.$moment.utc(sensor.timestamp))).asMinutes();
             var fillColor = timeDiffMinutes > 10 ? '#808080' : this.getMarkerColor(sensor[this.pmType]);
             sensor.marker = L.marker([sensorLocation.latitude, sensorLocation.longitude], {
@@ -554,10 +579,15 @@ export default {
             sensor.marker.bindPopup(popup);
             sensor.marker.on('click', () => {
                 this.selectedSensor = sensor;
-            });
+                //maybe put a watcher on the open target sensor and set data equal to the one in the array
 
-            sensor.marker.on('popupopen', function(e) {
+            })
+
+            //look at leaflet documentation :https://leafletjs.com/reference-1.7.1.html#domevent-on || https://leafletjs.com/reference-1.7.1.html#domevent-on
+
+            sensor.marker.on('popupopen', function (e) {
                 // Create new pop up vue component and...
+
                 var newPopup = new Vue({
                     vuetify,
                     render: h => h(Sensor, {
@@ -573,12 +603,12 @@ export default {
             });
 
             // Destroy pop up dialogue after the user closes it
-            sensor.marker.on('popupclose', function(e) {
+            sensor.marker.on('popupclose', function (e) {
                 e.popup._source.sensorPopup.$destroy("#flyCard");
             });
         },
 
-        buildMarkerIcon: function(sensor) {
+        buildMarkerIcon: function (sensor) {
             /** If you change SCG marker,
              *  you need to fine tune  iconAnchor, iconSize & popupAnchor as well*/
             return L.divIcon({
@@ -616,12 +646,14 @@ export default {
                 }, "slow").addClass('visible');
             }
         },
-        invertHex: function(hex) {
+        invertHex: function (hex) {
             return (Number(`0x1${hex}`) ^ 0xFFFFFF).toString(16).substr(1).toUpperCase();
         },
         getCircleMarker(color, fill, size, value) {
             var textColor = this.invertHex(fill);
-            var svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24"><circle fill="${fill}" fill-opacity="0.8" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="${color}" cx="12" cy="12" r="10"></circle><text v-bind x="12" y="15" fill="${textColor}" text-anchor="middle" font-family="PT Sans" font-size="8" >${value}</text></svg>`;
+            var svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24">
+                        <circle fill="${fill}" fill-opacity="0.8" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="${color}" cx="12" cy="12" r="10"></circle>
+                        <text id="sensorText" x="12" y="15" fill="${textColor}" text-anchor="middle" font-family="PT Sans" font-size="8" >${value}</text></svg>`;
             return svg;
         },
         getSquareMarker(color, fill, size, value) {
