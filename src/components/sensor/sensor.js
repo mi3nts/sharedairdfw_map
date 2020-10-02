@@ -1,5 +1,5 @@
 import sensorData from "../../services/sensor-data";
-import SensorChart from "../sensor-chart"
+import SensorChart from "../sensor-chart";
 /**
  * This is stand alone component showing sensor data only. 
  * Eventually it will grow to show more data.

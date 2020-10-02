@@ -1,4 +1,5 @@
 import sensorData from "../../services/sensor-data";
+//import spot from "../components/sensor/sensor.js";
 
 export default {
     props: ["sensor"],
@@ -104,10 +105,12 @@ export default {
             
             if (this.viewMode != "Hourly Averages") {
                 for (var i = 0; i < data.length; i++) {
-                    sensorValues.push({
-                        x: this.$moment.utc(data[i].timestamp).local().toDate(),
-                        y: data[i].pm2_5
-                    });
+                    if(data[i].pm2_5>=0){
+                        sensorValues.push({
+                            x: this.$moment.utc(data[i].timestamp).local().toDate(),
+                            y: data[i].pm2_5
+                        });
+                    }
                 }
             } else {
                 var prevHour = null;
