@@ -333,7 +333,8 @@ export default {
             function createLegend () {
                 // clear previously recreated legend
                 d3.select("#legend").selectAll("*").remove();
-                
+                var textColor = "#ffffff";
+
                 // do not show area shading (last 2 items in chartData)
                 for (var i = 0; i < chartData.length - 2; i++) {
                     if (chartData[i].values.length > 0) {
@@ -345,26 +346,31 @@ export default {
                             continue;
                         } else if (i == 1) {
                             labelText = "PM 2.5 SD";
-                        } else {
+                        }else {
                             labelText = chartData[i].key;
+                        }
+                        if(i == 3){
+                            textColor = "#000000";
+                        }else{
+                            textColor = "#ffffff";
                         }
 
                         d3.select("#legend")
                             .append("span")
-                                .style("height", "20px")
-                                .style("width", "20px")
+                                .style("height", "25px")
                                 .style("background-color", chartData[i].color)
-                                .style("border-radius", "50%")
+                                .style("border-radius", "10%")
                                 .style("display", "inline-block")
                                 .style("margin-right", "5px")
                                 .style("position", "relative")
-                                .style("top", "25px");
-                        d3.select("#legend")
                             .append("text")
                                 .text(labelText)
-                                .style("font-size", "12px")
-                                .style("padding-right", "20px")
-                                .style("position", "relative")
+                                .style("width", "10px")
+                                .style("font-size", "15px")
+                                .style("text-align", "center")
+                                .style("padding-left", "5px")
+                                .style("color",textColor)
+                                .style("padding-right", "5px")
                                 .style("top", "20px");
                     }
                 }
