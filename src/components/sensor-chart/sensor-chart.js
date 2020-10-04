@@ -333,7 +333,6 @@ export default {
             function createLegend () {
                 // clear previously recreated legend
                 d3.select("#legend").selectAll("*").remove();
-                var textColor = "#ffffff";
 
                 // do not show area shading (last 2 items in chartData)
                 for (var i = 0; i < chartData.length - 2; i++) {
@@ -346,13 +345,15 @@ export default {
                             continue;
                         } else if (i == 1) {
                             labelText = "PM 2.5 SD";
-                        }else {
+                        } else {
                             labelText = chartData[i].key;
                         }
-                        if(i == 3){
+
+                        // text color is default to white
+                        // change to black for yellow range
+                        let textColor = "#ffffff";
+                        if (i == 3) {
                             textColor = "#000000";
-                        }else{
-                            textColor = "#ffffff";
                         }
 
                         d3.select("#legend")
