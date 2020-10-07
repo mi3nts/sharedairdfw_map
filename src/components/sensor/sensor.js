@@ -12,6 +12,14 @@ export default {
     props: ["spot", "spotName"],
     data: () => ({
         showMore: false,
+        pm2_5: 0,
+        pm1: 0,
+        pm4: 0,
+        pm10: 0,
+        temperature: 0,
+        humidity: 0,
+        dewpoint: 0,
+
     }),
     //monitoring the change
     watch: {
@@ -23,6 +31,13 @@ export default {
     created: function () { },
     mounted: function () {
         this.initChart();
+        this.pm2_5 = this.spot.pm2_5
+        this.pm1 = this.spot.pm1
+        this.pm4 = this.spot.pm4
+        this.pm10 = this.spot.pm10
+        this.temperature = this.spot.temperature
+        this.humidity = this.spot.humidity
+        this.dewpoint = this.spot.dewpoint
         //subscribed to the whole folder of Mints topics
         //console.log(this.$mqtt.subscribe('#'))
     },
