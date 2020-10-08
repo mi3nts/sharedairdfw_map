@@ -62,6 +62,9 @@ export default {
             purpleAirGroup: L.layerGroup(),
             epaGroup: L.layerGroup(),
             pollutionGroup: L.layerGroup(),
+            /** store latitude and longitude values in case of invalid input */
+            latitudeCache: {},
+            longitudeCache: {},
         };
     },
     watch: {
@@ -136,7 +139,7 @@ export default {
         }
     },
     mounted: function () {
-        //subscribe to the sensor topics
+        // subscribe to the sensor topics
         console.log(this.$mqtt.subscribe('#'));
 
         // If the page is less than 600px wide, the sidebar starts off hidden
@@ -168,12 +171,10 @@ export default {
          * This will load data from PurpleAir API
          */
         this.loadPurpleAir();
-
         /**
          * This will load data from local json file
          */
         this.loadPollution();
-
         /**
          * Bind icons to accordions
          */
@@ -181,32 +182,28 @@ export default {
     },
     mqtt: {
         '+/calibrated'(payload) {
-
             if (payload != null) {
-                //possibly do more validation on the data
-                //console.log(payload.toString())
-                if (JSON.parse(payload.toString())) {
-                    payload = JSON.parse(payload.toString());
+                payload = JSON.parse(payload.toString());
 
-                }
-                else {
-                    //covering the NaN issue
-                    //var latitude = this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data.latitude;
-                    //var longitude = this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data.longitude;
-                    //payload = JSON.stringify(payload).replace('"NaN"',)
-                    console.log("NaN found")
+                // check for NaN latitude and longitude values
+                // replace invalid values with previously stored latitude/longitude values
+                if (isNaN(payload.latitude) || isNaN(payload.longitude)) {
+                    // check for stored values
+                    if (this.latitudeCache[payload.sensor_id] && this.longitudeCache[payload.sensor_id]) {
+                        payload.latitude = this.latitudeCache[payload.sensor_id];
+                        payload.longitude = this.longitudeCache[payload.sensor_id];
+                    }
+                } else {
+                    this.latitudeCache[payload.sensor_id] = payload.latitude;
+                    this.longitudeCache[payload.sensor_id] = payload.longitude;
                 }
 
                 if (this.$set(this.sensors, this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data, payload)) {
                     this.redrawSensors(payload)
-                    console.log(this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id }))
-                    console.log(this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data, "=>", payload)
-
-
+                    // console.log(this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id }))
+                    // console.log(this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data, "=>", payload)
                 }
-
             }
-
         }
     },
     methods: {
@@ -252,7 +249,7 @@ export default {
                     })
                 }).$mount().$el;
 
-                console.log(newPopup.innerHTML)
+                // console.log(newPopup.innerHTML)
 
                 sensors[sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data.marker.setPopupContent(() => newPopup);
 
