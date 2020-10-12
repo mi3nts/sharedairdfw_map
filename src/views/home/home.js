@@ -37,6 +37,9 @@ export default {
                 data_time: null,
                 updated_time: null
             },
+            //stores the status of the popup only tracks one
+            PopupStatus: false,
+            sensorComponents: [],
             radarLayer: false,
             windLayer: false,
             sensorLayer: true,
@@ -199,15 +202,15 @@ export default {
                 }
 
                 if (this.$set(this.sensors, this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data, payload)) {
-                    this.redrawSensors(payload)
-                    // console.log(this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id }))
-                    // console.log(this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data, "=>", payload)
+                    this.redrawSensors(payload, this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data, this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].name)
+                    console.log(this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id }))
+                    console.log(this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data, "=>", payload)
                 }
             }
         }
     },
     methods: {
-        redrawSensors(payload) {
+        redrawSensors(payload, sensor, sensorName) {
 
             //modifying the DOM according to the received data
             var timeDiffMinutes = this.$moment.duration(this.$moment.utc().diff(this.$moment.utc(payload.timestamp))).asMinutes();
@@ -218,55 +221,26 @@ export default {
                     html: this.getCircleMarker("#38b5e6", fillColor, 40, parseFloat(payload[this.pmType]).toFixed(2)),
                     iconAnchor: [20, 10],
                     iconSize: [20, 32],
-                    popupAnchor: [0, -30]
+                    popupAnchor: [150, -30]
                 }));
 
-            //var sensorHtml=(''); 
+            //this is to check if there is a card currently open if so close and re-open it works with the other if
+            if (this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data.marker.isPopupOpen() && this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data.sensor_id == payload.sensor_id) {
+                this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data.marker.closePopup()
+                this.PopupStatus = true
 
-            // Create new pop up vue component and...
-
-            // this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data.marker.getPopup().setContent('<div id="flycard"></div>');
-            //newPopup.$el.outerHTML
-            var hold = (function (sensors) {
-                //console.log(this.sensors)
-                //console.log(sensors)
-                sensors[sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data.marker.unbindPopup();
-                var popup = L.popup({
-                    offset: L.point(0, 45),
-                    maxWidth: '300px',
-                    autoPan: true,
-                    keepInView: true
-                }).setContent("<div id='flyCard'></div>");
-
-                sensors[sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data.marker.bindPopup(popup);
-                var newPopup = new Vue({
-                    vuetify,
-                    render: h => h(Sensor, {
-                        props: {
-                            spot: payload,
-                            spotName: sensors[sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].name
-                        }
-                    })
-                }).$mount().$el;
-
-                // console.log(newPopup.innerHTML)
-
-                sensors[sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data.marker.setPopupContent(() => newPopup);
-
-                //sensors[sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data.marker.getPopup().setContent(newPopup);
-                // ...track it in the marker component for destruction later 
-                //e.popup._source.sensorPopup = newPopup;
-
-            })(this.sensors);
-
-
-            //this calls the variable
-            this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data.marker.on('popupopen', hold);
-
-
-            /*  this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data.marker.on('popupclose', function (e) {
-                 e.popup._source.sensorPopup.$destroy("#flycard");
-             }); */
+            }
+            sensor.marker.on('popupopen', (e) => {
+                console.log("on")
+                console.log(payload)
+                this.checkSensor(e, this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data, sensorName, payload)
+            });
+            //give us the ability to update a popup if open albeit a hacky way.
+            if (this.PopupStatus && this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data.sensor_id == payload.sensor_id) {
+                this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data.marker.openPopup()
+                console.log("opening popup again")
+                this.PopupStatus = false;
+            }
 
         },
         buildLayers: function () {
@@ -586,7 +560,6 @@ export default {
                                                 name: sensorNameRes.data[0].sensor_name
                                             });
                                             this.renderSensor(this.sensors[this.sensors.length - 1].data, this.sensors[this.sensors.length - 1].location, this.sensors[this.sensors.length - 1].name, i++);
-                                            //this.renderSensor(sensorResponse.data[0], sensorLocatRes.data[0], sensorNameRes.data[0].sensor_name, i++);
                                         }
                                     });
                                 }
@@ -617,60 +590,76 @@ export default {
                 zIndexOffset: zIndexPriority * 5 // Ensures more recently updated sensors will remain on top
             });
 
-
-
-
             //handles click event for single click events
             sensor.marker.addTo(this.sensorGroup);
+
+
             var popup = L.popup({
                 offset: L.point(-150, 45),
                 maxWidth: '300px',
                 autoPan: true,
                 keepInView: true
-            }).setContent("<div id='flyCard'></div>");
-
+            }).setContent("<div id='flycard'></div>")
             sensor.marker.bindPopup(popup);
+
+
+
             sensor.marker.on('click', () => {
                 this.selectedSensor = sensor;
-                /*  sensor = this.updateValues(sensor);
-                 console.log(this.updateValues(sensor))
-                 console.log(sensor) */
                 //maybe put a watcher on the open target sensor and set data equal to the one in the array
             })
 
             //look at leaflet documentation :https://leafletjs.com/reference-1.7.1.html#domevent-on || https://leafletjs.com/reference-1.7.1.html#domevent-on
             sensor.marker.on('popupopen', (e) => {
-                // Create new pop up vue component and...
-                var newPopup = new Vue({
-                    vuetify,
-                    render: h => h(Sensor, {
-                        props: {
-                            spot: sensor,
-                            spotName: sensorName
-                        }
-                    })
-                });
-                newPopup.$mount("#flyCard");
-                // ...track it in the marker component for destruction later
-                e.popup._source.sensorPopup = newPopup;
+                console.log("once")
+                this.sensorEvent(e, sensor, sensorName)
             });
+            /* sensor.marker.once('popupclose', function (e) {
+                e.popup._source.sensorPopup.$destroy("#flyCard");
+            }); */
+
+
+        },
+        checkSensor: function (e, sensor, sensorName, payload) {
+
+            if (sensor.marker.isPopupOpen()) {
+                this.PopupStatus = true;
+                sensor.marker.update()
+            }
+
+            var newPopup = new Vue({
+                vuetify,
+                render: h => h(Sensor, {
+                    props: {
+                        spot: payload,
+                        spotName: sensorName
+                    }
+                })
+            }).$mount().$el;
+
+            sensor.marker.setPopupContent(() => newPopup)
+
+        },
+        sensorEvent: function (e, sensor, sensorName) {
+            // Create new pop up vue component and...
+            var newPopup = new Vue({
+                vuetify,
+                render: h => h(Sensor, {
+                    props: {
+                        spot: this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === sensor.sensor_id })].data,
+                        spotName: sensorName
+                    }
+                })
+            });
+            newPopup.$mount("#flycard");
+            // ...track it in the marker component for destruction later
+            e.popup._source.sensorPopup = newPopup;
 
             // Destroy pop up dialogue after the user closes it
-            sensor.marker.on('popupclose', function (e) {
-                if (d3.select("#flycard")) {
-                    e.popup._source.sensorPopup.$destroy("#flyCard");
-                }
-                else {
-                    console.log("Flycard not Found")
-                }
-
-            });
+            /* sensor.marker.once('popupclose', function (e) {
+                e.popup._source.sensorPopup.$destroy("#flyCard");
+            }); */
         },
-        /* updateValues: function (sensor) {
-            console.log(sensor)
-            console.log(this.sensors)
-            return this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === sensor.sensor_id })].data;
-        }, */
         buildMarkerIcon: function (sensor) {
             /** If you change SCG marker,
              *  you need to fine tune  iconAnchor, iconSize & popupAnchor as well*/

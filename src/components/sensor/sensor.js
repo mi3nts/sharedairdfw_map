@@ -19,8 +19,10 @@ export default {
         temperature: 0,
         humidity: 0,
         dewpoint: 0,
+        sensor_id: "",
 
     }),
+
     //monitoring the change
     watch: {
         'spot.pm2_5': function () {
@@ -31,21 +33,21 @@ export default {
     created: function () { },
     mounted: function () {
         this.initChart();
-        this.pm2_5 = this.spot.pm2_5
-        this.pm1 = this.spot.pm1
-        this.pm4 = this.spot.pm4
-        this.pm10 = this.spot.pm10
-        this.temperature = this.spot.temperature
-        this.humidity = this.spot.humidity
-        this.dewpoint = this.spot.dewpoint
-        //subscribed to the whole folder of Mints topics
-        //console.log(this.$mqtt.subscribe('#'))
+        this.startValues()
+        /*  this.pm2_5 = this.spot.pm2_5
+         this.pm1 = this.spot.pm1
+         this.pm4 = this.spot.pm4
+         this.pm10 = this.spot.pm10
+         this.temperature = this.spot.temperature
+         this.humidity = this.spot.humidity
+         this.dewpoint = this.spot.dewpoint */
+
     },
     /* mqtt: {
         //monitor topic incoming data
         //naming convention and wilcard reference: https://www.hivemq.com/blog/mqtt-essentials-part-5-mqtt-topics-best-practices/
-        "+/calibrated"(data) {
-            //console.log("This is " + data)
+        "/calibrated" (data) {
+            console.log("This is " + data)
             this.updateValues(data);
         }
     }, */
@@ -76,26 +78,32 @@ export default {
         closeIt: function () {
             this.$emit('close');
         },
-        updateValues: function (response) {
-            console.log("Updating values...");
-            //console.log(response.toString());
-            response = response.toString();
-
-            response = JSON.parse(response);
-            //console.log(response);
-
-            //maybe check timestamp to avoid writes
-            if (response != null && response.sensor_id == this.spot.sensor_id) {
-                console.log("im in");
-                this.spot.pm2_5 = response.pm2_5;
-                this.spot.pm1 = response.pm1;
-                this.spot.pm10 = response.pm10;
-                this.spot.temperature = response.temperature;
-                this.spot.humidity = response.humidity;
-                this.spot.timestamp = response.timestamp;
-            } else {
-                console.log("undefined or not the right sensor");
+        startValues: function () {
+            if (this.spot.pm2_5) {
+                this.pm2_5 = this.spot.pm2_5;
             }
+            if (this.spot.pm1) {
+                this.pm1 = 0;
+            }
+            if (this.spot.pm4) {
+                this.pm4 = 0;
+            }
+            if (this.spot.dewpoint) {
+                this.dewpoint = 0;
+            }
+            if (this.spot.pm10) {
+                this.pm10 = 0;
+            }
+            if (this.spot.temperature) {
+                this.temperature = 0;
+            }
+            if (this.spot.sensor_id) {
+                this.sensor_id = 0;
+            }
+
+        },
+        updateValues: function () {
+            console.log("tryingg")
         },
         createChart: function (data) {
 
