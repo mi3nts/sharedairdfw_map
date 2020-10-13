@@ -186,7 +186,19 @@ export default {
     mqtt: {
         '+/calibrated'(payload) {
             if (payload != null) {
-                payload = JSON.parse(payload.toString());
+
+                //to catch errors in parsing the incoming payload
+                try {
+                    if (JSON.parse(payload.toString())) {
+                        payload = JSON.parse(payload.toString());
+                    }
+                } catch (error) {
+                    //something happened with the string and now We deal with it.
+                    //this fixes the NaN issue
+                    payload = JSON.parse(payload.toString().replace(/NaN/g, "\"NaN\""))
+
+                }
+                //string is parsable by JSON parse function()
 
                 // check for NaN latitude and longitude values
                 // replace invalid values with previously stored latitude/longitude values
@@ -197,14 +209,27 @@ export default {
                         payload.longitude = this.longitudeCache[payload.sensor_id];
                     }
                 } else {
-                    this.latitudeCache[payload.sensor_id] = payload.latitude;
-                    this.longitudeCache[payload.sensor_id] = payload.longitude;
+                    //makes sure the data exists before hand latitude
+                    if (this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data.latitude) {
+                        this.latitudeCache[payload.sensor_id] = this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data.latitude;
+                    }
+                    else {
+                        this.latitudeCache[payload.sensor_id] = this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].location.latitude;
+                    }
+                    //makes sure the data exists before hand longitude
+                    if (this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data.longitude) {
+                        this.longitudeCache[payload.sensor_id] = this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data.longitude;
+                    }
+                    else {
+                        this.longitudeCache[payload.sensor_id] = this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].location.longitude;
+                    }
                 }
 
+                //update or put values into the sensors array to cache last payload
                 if (this.$set(this.sensors, this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data, payload)) {
                     this.redrawSensors(payload, this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data, this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].name)
-                    console.log(this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id }))
-                    console.log(this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data, "=>", payload)
+                    //console.log(this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id }))
+                    //console.log(this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data, "=>", payload)
                 }
             }
         }
@@ -231,8 +256,6 @@ export default {
 
             }
             sensor.marker.on('popupopen', (e) => {
-                console.log("on")
-                console.log(payload)
                 this.checkSensor(e, this.sensors[this.sensors.findIndex(obj => { return obj.data.sensor_id === payload.sensor_id })].data, sensorName, payload)
             });
             //give us the ability to update a popup if open albeit a hacky way.
@@ -611,7 +634,6 @@ export default {
 
             //look at leaflet documentation :https://leafletjs.com/reference-1.7.1.html#domevent-on || https://leafletjs.com/reference-1.7.1.html#domevent-on
             sensor.marker.on('popupopen', (e) => {
-                console.log("once")
                 this.sensorEvent(e, sensor, sensorName)
             });
             /* sensor.marker.once('popupclose', function (e) {
@@ -621,11 +643,6 @@ export default {
 
         },
         checkSensor: function (e, sensor, sensorName, payload) {
-
-            if (sensor.marker.isPopupOpen()) {
-                this.PopupStatus = true;
-                sensor.marker.update()
-            }
 
             var newPopup = new Vue({
                 vuetify,
