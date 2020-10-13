@@ -34,6 +34,7 @@ export default {
             purpleAirLayer: false,
             openAQLayer: false,
             pollutionLayer: false,
+            carLayer: false,
             //startDate: null,
             //endDate: null,
             /** Popup controls */
@@ -52,6 +53,14 @@ export default {
             purpleAirGroup: L.layerGroup(),
             epaGroup: L.layerGroup(),
             pollutionGroup: L.layerGroup(),
+            carGroup:L.layerGroup(),
+            latitude: [37.6276571, -14.2350],
+            longitude: [-74.0060, -51.9253],
+            color: 'black',
+            angle: -180,
+            width: 2,
+            dashArray: '4',
+            shapeData: this.map,
         }
     },
     watch: {
@@ -150,7 +159,9 @@ export default {
          * This will load data from local json file
          */
         this.loadPollution();
-
+        /**
+         * This will load data from MQTT car file
+         */
         /**
          * Bind icons to accordions
          */
@@ -397,7 +408,7 @@ export default {
                     fillColor = this.getMarkerColor(measurement.value);
                     markerValue = measurement.value;
                 }
-
+                
                 location.marker = L.marker([location.coordinates.latitude, location.coordinates.longitude], {
                     icon: L.divIcon({
                         className: 'svg-icon',
@@ -485,6 +496,7 @@ export default {
         renderSensor: function(sensor, sensorLocation, sensorName, zIndexPriority) {
             var timeDiffMinutes = this.$moment.duration(this.$moment.utc().diff(this.$moment.utc(sensor.timestamp))).asMinutes();
             var fillColor = timeDiffMinutes > 10 ? '#808080' : this.getMarkerColor(sensor[this.pmType]);
+
             sensor.marker = L.marker([sensorLocation.latitude, sensorLocation.longitude], {
                 icon: L.divIcon({
                     className: 'svg-icon',
@@ -500,6 +512,20 @@ export default {
 
             //handles click event for single click events
             sensor.marker.addTo(this.sensorGroup);
+
+            //a icon symbol that represent car sensor
+            /*var myIcon = L.icon({
+                iconUrl: '../../img/72-200.png',
+                iconSize: [25, 35],
+                iconAnchor: [22, 94],
+                popupAnchor: [-3, -76],
+            });
+            L.marker([32.7079, -96.9209], {icon: myIcon}).addTo(this.map);*/
+            L.marker([32.7079, -96.9209]).addTo(this.map)
+                .bindPopup('Car sensor sample')
+                .openPopup();
+
+            
             var popup = L.popup({
                 offset: L.point(-150, 45),
                 maxWidth: '300px',
@@ -606,10 +632,12 @@ export default {
             this.openAQLayer = false;
             this.pollutionLayer = false;
             this.howToUse = false;
+            this.carLayer = false;
             this.epaType = "PM25";
             this.pmType = "pm2_5";
             this.activePanel = 0;
             this.map.setView([32.89746164575043, -97.04086303710938], 10);
         }
     }
+    
 };
