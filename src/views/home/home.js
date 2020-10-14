@@ -598,8 +598,7 @@ export default {
         renderSensor: function (sensor, sensorLocation, sensorName, zIndexPriority) {
 
             var timeDiffMinutes = this.$moment.duration(this.$moment.utc().diff(this.$moment.utc(sensor.timestamp))).asMinutes();
-            var fillColor = timeDiffMinutes > 10 ? '#808080' : this.getMarkerColor(sensor[this.pmType]);
-
+            var fillColor = timeDiffMinutes > 60 ? '#808080' : this.getMarkerColor(sensor[this.pmType]);
             sensor.marker = L.marker([sensorLocation.latitude, sensorLocation.longitude], {
                 icon: L.divIcon({
                     className: 'svg-icon-' + sensor.sensor_id,
