@@ -5,6 +5,9 @@ import openAqData from "../../services/openaq-data";
 import epaData from "../../services/epa-data";
 import Vue from 'vue';
 import vuetify from '../../plugins/vuetify';
+//import {map} from 'leaflet';
+//import {antPath} from 'leaflet-ant-path'
+
 
 /**
  * Main landing page with all map functionality
@@ -27,6 +30,7 @@ export default {
                 data_time: null,
                 updated_time: null
             },
+            carLayer:false,
             radarLayer: false,
             windLayer: false,
             sensorLayer: true,
@@ -52,6 +56,7 @@ export default {
             purpleAirGroup: L.layerGroup(),
             epaGroup: L.layerGroup(),
             pollutionGroup: L.layerGroup(),
+            carGroup: L.layerGroup(),
         }
     },
     watch: {
@@ -70,6 +75,13 @@ export default {
                 this.purpleAirGroup.addTo(this.map)
             } else {
                 this.map.removeLayer(this.purpleAirGroup);
+            }
+        },
+        'carLayer': function (newValue) {
+            if (newValue) {
+                this.carGroup.addTo(this.map)
+            } else {
+                this.map.removeLayer(this.carGroup);
             }
         },
         'pollutionLayer': function (newValue) {
@@ -512,6 +524,23 @@ export default {
                 this.selectedSensor = sensor;
             });
 
+            L.marker([32.7079, -96.9209]).addTo(this.map)
+                .bindPopup('Car sensor sample')
+                .openPopup();
+
+            var latlngs = [
+                [32.9858, -96.7501],
+                [32.9758, -96.7401],
+                [32.9558, -96.7301],
+                [32.9358, -96.7201],
+                [32.9358, -96.7201],
+                [32.9358, -96.7101],
+                [32.9258, -96.7101],
+                [32.9179, -96.7009],
+                [32.7079, -96.9209],
+            ];
+            var polyline = L.polyline(latlngs, {color: 'red'}).addTo(this.map);
+            this.map.fitBounds(polyline.getBounds());
             sensor.marker.on('popupopen', function (e) {
                 // Create new pop up vue component and...
                 var newPopup = new Vue({
