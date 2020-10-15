@@ -7,17 +7,25 @@ export default {
         endDateModel: false,
         startDate: null,
         endDate: null,
-        dataInterval: ''
+        dataInterval: '',
+        viewSelectorItems: ["Live View", "Hourly Averages"],
+        viewMode: "Live View", // default view
     }),
-    created: function () {
+    created: function() {
         this.startDate = this.$moment.utc().add(-24, 'hour').format("YYYY-MM-DD");
         this.endDate = this.$moment.utc().format("YYYY-MM-DD");
     },
-    mounted: function () {
+    mounted: function() {
         this.initChart();
     },
+    watch: {
+        // watch for changes to view interval
+        viewMode() {
+            this.initChart();
+        }
+    },
     methods: {
-        initChart: function () {
+        initChart: function() {
             $("#chart2_" + this.sensor.sensor_id).html("<div class='my-4 text-center'>Loading data...</div>");
             sensorData.getChartData(
                 this.sensor.sensor_id, {
@@ -52,7 +60,7 @@ export default {
             }
             $("#interval-info").html("Interval: " + text);
         },
-        changeInterval: function (values) {
+        changeInterval: function(values) {
             var length = values.length;
             length = length / 3000;
             length = Math.round(length);
@@ -86,21 +94,88 @@ export default {
             }
             return newValues;
         },
-        createChart: function (data) {
+        createChart: function(data) {
             //formats the data for the chart
             var sensorValues = [];
-            for (var i = 0; i < data.length; i++) {
-                sensorValues.push({
-                    x: this.$moment.utc(data[i].timestamp).local().toDate(),
-                    y: data[i].pm2_5
-                });
-            }
+            var standardDevNeg = [];
+            var standardDevPos = [];
+            var areaBottom = [];
+            var areaSD = [];
+            
+            if (this.viewMode != "Hourly Averages") {
+                for (var i = 0; i < data.length; i++) {
+                    if (data[i].pm2_5 >= 0) {
+                        sensorValues.push({
+                            x: this.$moment.utc(data[i].timestamp).local().toDate(),
+                            y: data[i].pm2_5
+                        });
+                    }
+                }
+            } else {
+                var prevHour = null;
+                var currHour = 0;
+                var prevHourStart = 0;
+                var hourlyValues = [];
+                var avg = 0;
+                var sd = 0;
 
+                for (var j = 0; j < data.length; j++) {
+                    currHour = this.$moment.utc(data[j].timestamp).local().toDate().getHours();
+
+                    if (currHour == prevHour || prevHour == null) {
+                        if (data[j].pm2_5 >= 0) {
+                            hourlyValues.push(data[j].pm2_5);
+                        } 
+                    } else {
+                        // calculate average and standard deviation
+                        // avg = sum.reduce(((a, b) => a + b), 0) / sum.length;
+                        avg = d3.mean(hourlyValues);
+
+                        // returns the standard deviation, defined as the square root of the bias-corrected variance
+                        // calculates variance using variance() from 'variance.js'
+                        sd = d3.deviation(hourlyValues);
+
+                        // plot on graph
+                        sensorValues.push({
+                            x: this.$moment.utc(data[prevHourStart].timestamp).local().toDate(),
+                            y: avg
+                        });
+                        standardDevNeg.push({
+                            x: this.$moment.utc(data[prevHourStart].timestamp).local().toDate(),
+                            y: avg - sd
+                        });
+                        standardDevPos.push({
+                            x: this.$moment.utc(data[prevHourStart].timestamp).local().toDate(),
+                            y: avg + sd
+                        });
+                        areaBottom.push({ // covers area going up to -SD line
+                            x: this.$moment.utc(data[prevHourStart].timestamp).local().toDate(),
+                            y: avg - sd
+                        });
+                        areaSD.push({
+                            x: this.$moment.utc(data[prevHourStart].timestamp).local().toDate(),
+                            y: 2 * sd
+                        })
+
+                        // set marker index for next hour to display
+                        prevHourStart = j;
+
+                        // reset values
+                        hourlyValues = [];
+                    }
+                    prevHour = currHour;
+                }
+            }
             if (sensorValues.length > 3000) {
                 sensorValues = this.changeInterval(sensorValues);
             }
+            var maxYValue;
+            if (this.viewMode == "Hourly Averages") {
+                maxYValue = Math.max.apply(Math, standardDevPos.map(function(o) { return o.y; }));
+            } else {
+                maxYValue = Math.max.apply(Math, sensorValues.map(function(o) { return o.y; }));
+            }
 
-            var maxYValue = Math.max.apply(Math, sensorValues.map(function (o) { return o.y; }));
             var yellowValue = 0;
             var orangeValue = 0;
             var redValue = 0;
@@ -127,13 +202,25 @@ export default {
                 purpleValue = 50;
                 maroonValue = maxYValue - (yellowValue + orangeValue + redValue + purpleValue);
             }
+
             var chartData = [
-                //data
-                {
+                { // data
                     key: "PM 2.5",
-                    values: [{}]
+                    values: [{}],
+                    strokeWidth: this.viewMode == "Hourly Averages" ? 3 : 1.5,
+                    color: "#1f77b4"
                 },
-                //color ranges of µg/m³
+                { // standard deviation (-)
+                    key: "PM 2.5 -SD",
+                    values: [{}],
+                    color: "#69b2ee",
+                },
+                { // standard deviation (+)
+                    key: "PM 2.5 +SD",
+                    values: [{}],
+                    color: "#69b2ee",
+                },
+                // color ranges of µg/m³
                 { //0-10µg/m³ yellow
                     key: "0-10µg/m³",
                     values: [{
@@ -198,45 +285,131 @@ export default {
                     }
                     ],
                     color: '#aa2626'
-                }
+                },
+                { // transparent layer, used to help with area shading
+                    key: "Lower Area",
+                    values: areaBottom,
+                    color: 'rgba(255, 255, 68, 0)',
+                },
+                { // shading for standard deviation
+                    key: "SD Area",
+                    values: areaSD,
+                    color: "#69b2ee"
+                },
             ];
 
-            //sets the chart types among other things
+            // sets the chart types among other things
             chartData[0].type = "line";
             chartData[0].yAxis = 1;
-            chartData[0].values = sensorValues; //sets the data from sensor
-            chartData[1].type = "area";
+            chartData[0].values = sensorValues; // sets the data from sensor
+            chartData[1].type = "line";
             chartData[1].yAxis = 1;
-            chartData[2].type = "area";
+            chartData[1].values = standardDevPos;
+            chartData[2].type = "line";
             chartData[2].yAxis = 1;
+            chartData[2].values = standardDevNeg;
+
+            // color ranges of µg/m³
             chartData[3].type = "area";
             chartData[3].yAxis = 1;
             chartData[4].type = "area";
             chartData[4].yAxis = 1;
             chartData[5].type = "area";
             chartData[5].yAxis = 1;
+            chartData[6].type = "area";
+            chartData[6].yAxis = 1;
+            chartData[7].type = "area";
+            chartData[7].yAxis = 1;
 
+            // standard deviation shading
+            chartData[8].type = "area";
+            chartData[8].yAxis = 2;
+            chartData[9].type = "area";
+            chartData[9].yAxis = 2;
+
+            let hourlyTicks = this.viewMode == "Hourly Averages" ? true : false;
             var sensor_id_chart = this.sensor.sensor_id;
+
+            function createLegend () {
+                // clear previously recreated legend
+                d3.select("#legend").selectAll("*").remove();
+
+                // do not show area shading (last 2 items in chartData)
+                for (var i = 0; i < chartData.length - 2; i++) {
+                    if (chartData[i].values.length > 0) {
+                        // we don't need to display legend for both SD lines
+                        // skip over the second line
+                        // use a more general label for the first line
+                        let labelText = "";
+                        if (i == 2) {
+                            continue;
+                        } else if (i == 1) {
+                            labelText = "PM 2.5 SD";
+                        } else {
+                            labelText = chartData[i].key;
+                        }
+
+                        // text color is default to white
+                        // change to black for yellow range
+                        let textColor = "#ffffff";
+                        if (i == 3) {
+                            textColor = "#000000";
+                        }
+
+                        d3.select("#legend")
+                            .append("span")
+                                .style("height", "25px")
+                                .style("background-color", chartData[i].color)
+                                .style("border-radius", "10%")
+                                .style("display", "inline-block")
+                                .style("margin-right", "5px")
+                                .style("position", "relative")
+                            .append("text")
+                                .text(labelText)
+                                .style("width", "10px")
+                                .style("font-size", "15px")
+                                .style("text-align", "center")
+                                .style("padding-left", "5px")
+                                .style("color",textColor)
+                                .style("padding-right", "5px")
+                                .style("top", "20px");
+                    }
+                }
+            }
+
             nv.addGraph(function () {
+                createLegend();
                 var chart = nv.models.multiChart()
                     .margin({
-                        top: 50,
+                        top: 15,
                         right: 60,
                         bottom: 50,
                         left: 90
                     })
                     .color(d3.scale.category10().range())
                     .yDomain1([0, maxYValue]);
+                chart.showLegend(false)
+                nv.utils.windowResize(function(){ chart.update(); });
+                chart.yDomain2([0, maxYValue]);
                 chart.legend.updateState(false);
                 chart.xAxis
-                    .tickFormat(function (d) {
-                        return d3.time.format('%b %d %I:%M:%S%p')(new Date(d));
+                    .tickFormat(function(d) {
+                        if (hourlyTicks) {
+                            return d3.time.format('%b %d %I:00:00%p')(new Date(d));
+                        } else {
+                            return d3.time.format('%b %d %I:%M:%S%p')(new Date(d));
+                        }
                     })
                     .staggerLabels(true);
                 chart.yAxis1
-                    .tickFormat(function (d) {
+                    .tickFormat(function(d) {
                         return d3.format(',.2f')(d) + 'µg/m³';
                     });
+                chart.yAxis2
+                    .tickFormat(function(d) {
+                        return d3.format(',.2f')(d) + 'µg/m³';
+                    });
+
                 d3.select("#chart2_" + sensor_id_chart + " svg")
                     .datum(chartData)
                     .transition()
@@ -246,4 +419,4 @@ export default {
             });
         }
     }
-};
+}

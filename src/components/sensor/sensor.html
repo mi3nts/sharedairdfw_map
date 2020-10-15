@@ -27,14 +27,14 @@
             <hr />
             <div style='text-align:center; font-weight:bold'>Past 24 hours</div>
             <div class='with-3d-shadow with-transitions'>
-                <div id="chart">
-                    <div class="my-4 text-center">Loading data...</dv>
-                    </div>i
+                    <div id="chart">
+                        <div class="my-4 text-center">Loading data...</div>
+                    </div>
                     <div class="sub-text text-center">PM 2.5 (μg/m³) (1-hour average)</div>
                     <div class="text-center mt-2">
                         <a @click="showMore=true">More data</a>
                     </div>
-                </div>
+
             </div>
         </div>
         <v-dialog v-model="showMore" max-width="90%">

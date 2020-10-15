@@ -24,7 +24,7 @@ export default {
     components: {
         Sensor
     },
-    data: function () {
+    data: function() {
         return {
             map: null,
             /** Currently clicked sensor is stored here */
@@ -91,21 +91,21 @@ export default {
                 this.map.removeLayer(this.openAQGroup);
             }
         },
-        'purpleAirLayer': function (newValue) {
+        'purpleAirLayer': function(newValue) {
             if (newValue) {
                 this.purpleAirGroup.addTo(this.map);
             } else {
                 this.map.removeLayer(this.purpleAirGroup);
             }
         },
-        'pollutionLayer': function (newValue) {
+        'pollutionLayer': function(newValue) {
             if (newValue) {
                 this.pollutionGroup.addTo(this.map);
             } else {
                 this.map.removeLayer(this.pollutionGroup);
             }
         },
-        'epaLayer': function (newValue) {
+        'epaLayer': function(newValue) {
             if (newValue) {
                 this.epaGroup.addTo(this.map);
             } else {
@@ -113,27 +113,27 @@ export default {
             }
             this.openAQLayer = newValue;
         },
-        'epaType': function () {
+        'epaType': function() {
             if (this.epaLayer) {
                 this.loadEPA(true);
                 this.loadOpenAQ(true);
             }
         },
-        'sensorLayer': function (newValue) {
+        'sensorLayer': function(newValue) {
             if (newValue) {
                 this.sensorGroup.addTo(this.map);
             } else {
                 this.map.removeLayer(this.sensorGroup);
             }
         },
-        'radarLayer': function (newValue) {
+        'radarLayer': function(newValue) {
             if (newValue) {
                 this.layers.radar.addTo(this.map);
             } else {
                 this.map.removeLayer(this.layers.radar);
             }
         },
-        'windLayer': function (newValue) {
+        'windLayer': function(newValue) {
             if (newValue) {
                 this.layers.wind_layer.addTo(this.map);
             } else {
@@ -311,9 +311,9 @@ export default {
             );
 
             /** Wind Layer */
-            this.buildWindLayer('Carto Positron', false);
+            this.buildWindLayer('Carto Positron', true);
         },
-        windColorScale: function (layerName) {
+        windColorScale: function(layerName) {
             var dark = [
                 "rgb(36,104, 180)",
                 "rgb(60,157, 194)",
@@ -357,7 +357,7 @@ export default {
                 return light;
             }
         },
-        buildWindLayer: function (layerName, addWhenready) {
+        buildWindLayer: function(layerName, addWhenready) {
             sensorData.getWindData().then(response => {
                 this.layers.wind_layer = L.velocityLayer({
                     displayValues: true,
@@ -381,14 +381,14 @@ export default {
                 }
             });
         },
-        bindIconsToAccordian: function () {
+        bindIconsToAccordian: function() {
             $('#PurpleAir').append(this.getPentagonMarker("#9370DB", "#ffff9e", 25, ''));
             $('#EPA').append(this.getSquareMarker("#6B8E23", "#ffff9e", 25, ''));
             //$('#EPA').append(this.getHexagonMarker("#66CDAA", "#ffff9e", 25, ''));
             $('#DFW').append(this.getCircleMarker("#38b5e6", "#ffff9e", 25, ''));
             $('#pollution').append(this.getCircleMarker("#38b5e6", "#000000", 20, ''));
         },
-        initMap: function () {
+        initMap: function() {
             this.map = L.map('map', {
                 center: [32.89746164575043, -97.04086303710938],
                 zoom: 10,
@@ -411,7 +411,7 @@ export default {
                 this.buildWindLayer(event.name, previousValue);
             });
         },
-        loadPurpleAir: function () {
+        loadPurpleAir: function() {
             purpleAirData.getSensorData(purpleAirData.sensors.join("|")).then(response => {
                 response.data.results.forEach(result => {
                     /** They have nested devices. So, let's consider parent only */
@@ -421,14 +421,14 @@ export default {
                 });
             });
         },
-        loadPollution: function () {
+        loadPollution: function() {
             this.$axios.get("/json/PollutionBurdenByCouncilDistrict.json").then(response => {
                 response.data.forEach(item => {
                     this.renderPollution(item);
                 });
             });
         },
-        renderPollution: function (location) {
+        renderPollution: function(location) {
             location.marker = L.marker([location.Latitude, location.Longitude], {
                 icon: L.divIcon({
                     className: 'svg-icon',
@@ -448,7 +448,7 @@ export default {
             popup += "</div>";
             location.marker.bindPopup(popup);
         },
-        renderPurpleAir: function (location) {
+        renderPurpleAir: function(location) {
             location.marker = L.marker([location.Lat, location.Lon], {
                 icon: L.divIcon({
                     className: 'svg-icon',
@@ -481,7 +481,7 @@ export default {
             popup += "</div>";
             location.marker.bindPopup(popup);
         },
-        loadOpenAQ: function (refresh) {
+        loadOpenAQ: function(refresh) {
             if (refresh) {
                 this.map.removeLayer(this.openAQGroup);
                 this.openAQGroup = L.layerGroup();
@@ -493,7 +493,7 @@ export default {
                 });
             });
         },
-        renderOpenAQ: function (location) {
+        renderOpenAQ: function(location) {
             var parameter = this.epaType.toLocaleLowerCase();
             location.measurements.forEach((measurement) => {
                 if (parameter != measurement.parameter) {
@@ -528,7 +528,7 @@ export default {
                 location.marker.bindPopup(popup);
             });
         },
-        loadEPA: function (refresh) {
+        loadEPA: function(refresh) {
             if (refresh) {
                 this.map.removeLayer(this.epaGroup);
                 this.epaGroup = L.layerGroup();
@@ -540,7 +540,7 @@ export default {
                 });
             });
         },
-        renderEPA: function (location) {
+        renderEPA: function(location) {
             var fillColor = "#66CDAA"; //O3 colors to be determined
             var PM_value = "";
             if (location.Parameter == "PM2.5") {
@@ -565,7 +565,7 @@ export default {
             popup += "</div>";
             location.marker.bindPopup(popup);
         },
-        loadData: function () {
+        loadData: function() {
             sensorData.getSensors().then(response => {
                 var i = 0;
                 response.data.forEach(s => {
