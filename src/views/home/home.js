@@ -537,9 +537,10 @@ export default {
                 [32.9358, -96.7101],
                 [32.9258, -96.7101],
                 [32.9179, -96.7009],
+                [32.6779, -96.6809],
                 [32.7079, -96.9209],
             ];
-            var polyline = L.polyline(latlngs, {color: 'red'}).addTo(this.map);
+            var polyline = L.polyline(latlngs, {color: 'lightblue'}).addTo(this.map);
             this.map.fitBounds(polyline.getBounds());
             sensor.marker.on('popupopen', function (e) {
                 // Create new pop up vue component and...
