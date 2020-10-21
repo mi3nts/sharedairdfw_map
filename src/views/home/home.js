@@ -524,7 +524,12 @@ export default {
                 this.selectedSensor = sensor;
             });
 
-            L.marker([32.7079, -96.9209]).addTo(this.map)
+            var carIcon = L.icon({
+                iconUrl: '../../img/72-200.png',
+                iconSize:     [20,35]
+            })
+
+            L.marker([32.7079, -96.9209],{icon: carIcon}).addTo(this.map)
                 .bindPopup('Car sensor sample')
                 .openPopup();
 
