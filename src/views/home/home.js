@@ -386,11 +386,11 @@ export default {
             });
         },
         renderOpenAQ: function (location) {
-            //var parameter = this.epaType.toLocaleLowerCase();
+            var parameter = this.epaType.toLocaleLowerCase();
             location.measurements.forEach((measurement) => {
-                // if (parameter != measurement.parameter) {
-                //     return;
-                // }
+                if (parameter != measurement.parameter) {
+                    return;
+                }
                 var markerValue = '';
                 var fillColor = "#6B8E23"; //O3 colors to be determined
                 if (measurement.parameter == "pm25") {
