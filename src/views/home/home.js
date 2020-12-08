@@ -46,9 +46,7 @@ export default {
             /** All available sensor instances  */
             sensors: [],
             sensorGroup: L.markerClusterGroup({
-                disableClusteringAtZoom: 13,
-                zoomToBoundsOnClick : false,
-                spiderfyOnMaxZoom : true
+                disableClusteringAtZoom: 13
             }),
             openAQGroup: L.layerGroup(),
             purpleAirGroup: L.layerGroup(),
