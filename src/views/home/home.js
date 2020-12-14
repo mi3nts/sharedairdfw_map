@@ -427,9 +427,13 @@ export default {
                 this.epaGroup.addTo(this.map);
             }
             epaData.getLatestCityData(this.epaType).then(response => {
-                response.data.forEach(result => {
-                    this.renderEPA(result);
-                })
+                epaData.getHintonData().then(hintonResp => {
+                    response.data.push(hintonResp);
+                    response.data.forEach(result => {
+                        this.renderEPA(result);
+                    })
+                });
+
             });
         },
         renderEPA: function (location) {
