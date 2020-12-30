@@ -126,6 +126,25 @@
             <v-expansion-panel>
                 <v-expansion-panel-header>
                     <div>
+                        <v-checkbox class="my-0" hide-details color="primary" v-model="esaSatLayer" label="ESA">
+                        </v-checkbox>
+                    </div>
+                </v-expansion-panel-header>
+                <v-expansion-panel-content>
+                    <div>
+                        <v-radio-group hide-details v-model="esaSatType" class="my-0">
+                            <v-radio :disabled="!esaSatLayer" color="primary" label="NO2" value="NO2"></v-radio>
+                            <v-radio :disabled="!esaSatLayer" color="primary" label="CO" value="CO"></v-radio>
+                            <v-radio :disabled="!esaSatLayer" color="primary" label="CH4" value="CH4"></v-radio>
+                        </v-radio-group>
+                        <p></p>
+                        <p style="font-size: 14px">European Space Agency - Contains modified Copernicus Sentinel data 2020</p>
+                    </div>
+                </v-expansion-panel-content>
+            </v-expansion-panel>
+            <v-expansion-panel>
+                <v-expansion-panel-header>
+                    <div>
                         <v-checkbox :disabled="!wind.data_time" class="my-0" hide-details color="primary"
                             v-model="windLayer" label="NOAA (Wind)"></v-checkbox>
                     </div>

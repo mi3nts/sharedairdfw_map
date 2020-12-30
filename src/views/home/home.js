@@ -34,11 +34,14 @@ export default {
             purpleAirLayer: false,
             openAQLayer: false,
             pollutionLayer: false,
+            esaSatLayer: false,
             //startDate: null,
             //endDate: null,
             /** Popup controls */
             howToUse: false,
             epaType: "PM25",
+            esaSatType: "NO2",
+            curESASatType: "NO2",
             /** Currently selected PM type */
             pmType: "pm2_5",
             /** Default state of left side expansion panels */
@@ -57,13 +60,6 @@ export default {
     watch: {
         'pmType': function () {
             this.refreshIcons()
-        },
-        'openAQLayer': function (newValue) {
-            if (newValue) {
-                this.openAQGroup.addTo(this.map)
-            } else {
-                this.map.removeLayer(this.openAQGroup);
-            }
         },
         'purpleAirLayer': function (newValue) {
             if (newValue) {
@@ -85,7 +81,15 @@ export default {
             } else {
                 this.map.removeLayer(this.epaGroup);
             }
+            // When EPA layer is enabled, the OpenAQ layer is also enabled
             this.openAQLayer = newValue;
+        },
+        'openAQLayer': function (newValue) {
+            if (newValue) {
+                this.openAQGroup.addTo(this.map)
+            } else {
+                this.map.removeLayer(this.openAQGroup);
+            }
         },
         'epaType': function () {
             if (this.epaLayer) {
@@ -107,6 +111,22 @@ export default {
                 this.map.removeLayer(this.layers.radar);
             }
         },
+        // Watches if the ESA layer should be displayed
+        'esaSatLayer': function (newValue) {
+            if (newValue) {
+                this.loadESALayerByType()
+            } else {
+                this.unloadESALayer()
+            }
+        },
+        // Watches what ESA satilite layer type should be displayed
+        'esaSatType': function (newValue) {
+            if(newValue) {
+                this.loadESALayerByType()
+            } else {
+                this.unloadESALayer()
+            }
+        },
         'windLayer': function (newValue) {
             if (newValue) {
                 this.layers.wind_layer.addTo(this.map);
@@ -121,7 +141,8 @@ export default {
             this.slide();
         }
 
-        /** Let's first build the layers. Notice that map is not ready yet.
+        /** 
+         * Let's first build the layers. Notice that map is not ready yet.
          * We are building layers not rendering them
          */
         this.buildLayers();
@@ -197,10 +218,51 @@ export default {
                     layers: 'nexrad-n0r',
                     format: 'image/png',
                     transparent: true,
+                    opacity: 0.3,
                     attribution: "Weather data &copy; 2015 IEM Nexrad",
                     zIndex: 1000
                 }
             );
+
+            /** 
+             * ESA Satilite Layers
+             * Contains modified Copernicus Sentinel data 2020
+             */
+            // NO2
+            this.layers.esaSatNO2Layer = L.tileLayer.wms(
+                "https://creodias.sentinel-hub.com/ogc/wms/76b060fd-9af7-43f6-bcdc-419c2375c581", {
+                    layers: 'NO2',
+                    format: 'image/png',
+                    transparent: true,
+                    opacity: 0.3,
+                    attribution: "European Space Agency - Contains modified Copernicus Sentinel data 2020",
+                    zIndex: 1100
+                }
+            )
+
+            // CO
+            this.layers.esaSatCOLayer = L.tileLayer.wms(
+                "https://creodias.sentinel-hub.com/ogc/wms/76b060fd-9af7-43f6-bcdc-419c2375c581", {
+                    layers: 'CO',
+                    format: 'image/png',
+                    transparent: true,
+                    opacity: 0.3,
+                    attribution: "European Space Agency - Contains modified Copernicus Sentinel data 2020",
+                    zIndex: 1200
+                }
+            )
+
+            // CH4
+            this.layers.esaSatCH4Layer = L.tileLayer.wms(
+                "https://creodias.sentinel-hub.com/ogc/wms/76b060fd-9af7-43f6-bcdc-419c2375c581", {
+                    layers: 'CH4',
+                    format: 'image/png',
+                    transparent: true,
+                    opacity: 0.3,
+                    attribution: "European Space Agency - Contains modified Copernicus Sentinel data 2020",
+                    zIndex: 1300
+                }
+            )
 
             /** Wind Layer */
             this.buildWindLayer('Carto Positron', true);
@@ -373,26 +435,37 @@ export default {
             popup += "</div>";
             location.marker.bindPopup(popup);
         },
+        /**
+         * Loads data from the OpenAQ data source. 
+         * Does not render the data.
+         */
         loadOpenAQ: function (refresh) {
+            // Recreates layer so old markers are eliminated and new markers with updated values
+            //   can be easily shown
             if (refresh) {
                 this.map.removeLayer(this.openAQGroup);
                 this.openAQGroup = L.layerGroup();
                 this.openAQGroup.addTo(this.map);
             }
+            // Network retrieval
             openAqData.getLatestCityData().then(response => {
                 response.data.results.forEach(result => {
                     this.renderOpenAQ(result);
                 });
             });
         },
+        /**
+         * Renders OpenAQ data
+         */
         renderOpenAQ: function (location) {
             var parameter = this.epaType.toLocaleLowerCase();
             location.measurements.forEach((measurement) => {
                 if (parameter != measurement.parameter) {
                     return;
                 }
+                // Create marker
                 var markerValue = '';
-                var fillColor = "#6B8E23"; //O3 colors to be determined
+                var fillColor = "#6B8E23";
                 if (measurement.parameter == "pm25") {
                     fillColor = this.getMarkerColor(measurement.value);
                     markerValue = measurement.value;
@@ -408,6 +481,8 @@ export default {
                     })
                 })
                 location.marker.addTo(this.openAQGroup);
+
+                // Create popup
                 var popup = "<div style='font-size:14px'>";
                 popup += "<div style='text-align:center; font-weight:bold'>" + location.location + " </div><br>";
                 if (measurement.parameter == "pm25") {
@@ -415,17 +490,24 @@ export default {
                 } else if (measurement.parameter == "o3") {
                     popup += "<li>" + "O3 : " + measurement.value + " " + measurement.unit + " </li><br>";
                 }
-                popup += "<div style='text-align:right; font-size: 11px'>Last Updated: " + location.measurements[0].lastUpdated + " UTC</div>";
+                popup += "<div style='text-align:right; font-size: 11px'>Last Updated: " + location.measurements[0].lastUpdated + " UTC, OpenAQ data</div>";
                 popup += "</div>";
                 location.marker.bindPopup(popup);
             });
         },
+        /**
+         * Loads data from the EPA data source. 
+         * Does not render the data.
+         */
         loadEPA: function (refresh) {
+            // Recreates layer so old markers are eliminated and new markers with updated values
+            //   can be easily shown
             if (refresh) {
                 this.map.removeLayer(this.epaGroup);
                 this.epaGroup = L.layerGroup();
                 this.epaGroup.addTo(this.map);
             }
+            // Network retrieval
             epaData.getLatestCityData(this.epaType).then(response => {
                 epaData.getHintonData().then(hintonResp => {
                     response.data.push(hintonResp);
@@ -436,8 +518,12 @@ export default {
 
             });
         },
+        /**
+         * Renders EPA data
+         */
         renderEPA: function (location) {
-            var fillColor = "#66CDAA"; //O3 colors to be determined
+            // Create marker
+            var fillColor = "#66CDAA";
             var PM_value = "";
             if (location.Parameter == "PM2.5") {
                 fillColor = this.getMarkerColor(location.Value)
@@ -454,12 +540,54 @@ export default {
                 })
             })
             location.marker.addTo(this.epaGroup);
+
+            // Create popup
             var popup = "<div style='font-size:14px'>";
             popup += "<div style='text-align:center; font-weight:bold'>" + location.SiteName + " </div><br>";
             popup += "<li class='" + (location.Parameter == 'PM2.5' ? 'pm25' : '') + "'> " + location.Parameter + " : " + location.Value + " µg/m³ </li><br>";
-            popup += "<div style='text-align:right; font-size: 11px'>Last Updated: " + location.UTC + " UTC</div>";
+            popup += "<div style='text-align:right; font-size: 11px'>Last Updated: " + location.UTC + " UTC, EPA data</div>";
             popup += "</div>";
             location.marker.bindPopup(popup);
+        },
+        /**
+         * Loads ESA satilite layers onto the map
+         */
+        loadESALayerByType: function () {
+            if(this.esaSatLayer == true) {
+                // Check to see if the current layer should be unloaded if the new, 
+                //   selected layer is different
+                if(this.curESASatType != this.esaSatType) {
+                    this.unloadESALayer()
+                }
+                // Load the new satilite layer based on the current selection, then set the 
+                //   currently selected layer
+                if (this.esaSatType == "NO2") {
+                    this.layers.esaSatNO2Layer.addTo(this.map);
+                    this.curESASatType = this.esaSatType
+                } 
+                else if (this.esaSatType == "CO") {
+                    this.layers.esaSatCOLayer.addTo(this.map);
+                    this.curESASatType = this.esaSatType
+                } 
+                else if (this.esaSatType == "CH4") {
+                    this.layers.esaSatCH4Layer.addTo(this.map);
+                    this.curESASatType = this.esaSatType
+                }
+            }
+        },
+        /**
+         * Unloads ESA satilite layers from the map
+         */
+        unloadESALayer: function () {
+            if (this.curESASatType == "NO2") {
+                this.map.removeLayer(this.layers.esaSatNO2Layer)
+            } 
+            else if (this.curESASatType == "CO") {
+                this.map.removeLayer(this.layers.esaSatCOLayer)
+            } 
+            else if (this.curESASatType == "CH4") {
+                this.map.removeLayer(this.layers.esaSatCH4Layer)
+            }
         },
         loadData: function () {
             sensorData.getSensors().then(response => {
@@ -601,8 +729,10 @@ export default {
             return svg;
         },
         reset() {
+            this.unloadESALayer();
             this.selectedSensor = null;
             this.radarLayer = false;
+            this.esaSatLayer = false;
             this.windLayer = true;
             this.sensorLayer = true;
             this.epaLayer = false;
@@ -611,6 +741,8 @@ export default {
             this.pollutionLayer = false;
             this.howToUse = false;
             this.epaType = "PM25";
+            this.esaSatType = "NO2";
+            this.curESASatType = "NO2";
             this.pmType = "pm2_5";
             this.activePanel = 0;
             this.map.setView([32.89746164575043, -97.04086303710938], 10);
