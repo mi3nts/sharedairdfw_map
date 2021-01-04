@@ -23,7 +23,7 @@ export default new Vue({
             return this.$axios.get("https://cors-anywhere.herokuapp.com/" + this.baseUrl + "/?parameters=" + epaType + "&" + this.bboxRecent);
         },
         getTceqData: function () {
-            return this.$axios.get("https://cors-anywhere.herokuapp.com/" + 'https://api.apify.com/v2/key-value-stores/Jq3RTLsqqOBBZyp8d/records/tceq?disableRedirect=1');
+            return this.$axios.get("https://cors-anywhere.herokuapp.com/" + 'https://api.apify.com/v2/key-value-stores/zRMrLIXwTTZPGFpw8/records/tceq?disableRedirect=1');
         },
         getHistoricalData: function (startDate, endDate) {
             return this.$axios.get(this.baseUrl + "/?startDate=" + startDate + "&endDate=" + endDate + "&parameters=" + this.bboxRecent);
