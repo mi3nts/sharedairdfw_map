@@ -121,7 +121,7 @@ export default {
         },
         // Watches what ESA satilite layer type should be displayed
         'esaSatType': function (newValue) {
-            if(newValue) {
+            if (newValue) {
                 this.loadESALayerByType()
             } else {
                 this.unloadESALayer()
@@ -465,11 +465,13 @@ export default {
                 }
                 // Create marker
                 var markerValue = '';
-                var fillColor = "#6B8E23";
                 if (measurement.parameter == "pm25") {
                     fillColor = this.getMarkerColor(measurement.value);
                     markerValue = measurement.value;
                 }
+
+                var timeDiffHours = this.$moment.duration(this.$moment.utc().diff(this.$moment.utc(measurement.lastUpdated))).asHours();
+                var fillColor = timeDiffHours > 24 ? '#808080' : "#6B8E23";
 
                 location.marker = L.marker([location.coordinates.latitude, location.coordinates.longitude], {
                     icon: L.divIcon({
@@ -523,7 +525,8 @@ export default {
          */
         renderEPA: function (location) {
             // Create marker
-            var fillColor = "#66CDAA";
+            var timeDiffHours = this.$moment.duration(this.$moment.utc().diff(this.$moment.utc(location.UTC))).asHours();
+            var fillColor = timeDiffHours > 24 ? '#808080' : "#66CDAA";
             var PM_value = "";
             if (location.Parameter == "PM2.5") {
                 fillColor = this.getMarkerColor(location.Value)
@@ -553,10 +556,10 @@ export default {
          * Loads ESA satilite layers onto the map
          */
         loadESALayerByType: function () {
-            if(this.esaSatLayer == true) {
+            if (this.esaSatLayer == true) {
                 // Check to see if the current layer should be unloaded if the new, 
                 //   selected layer is different
-                if(this.curESASatType != this.esaSatType) {
+                if (this.curESASatType != this.esaSatType) {
                     this.unloadESALayer()
                 }
                 // Load the new satilite layer based on the current selection, then set the 
@@ -564,12 +567,10 @@ export default {
                 if (this.esaSatType == "NO2") {
                     this.layers.esaSatNO2Layer.addTo(this.map);
                     this.curESASatType = this.esaSatType
-                } 
-                else if (this.esaSatType == "CO") {
+                } else if (this.esaSatType == "CO") {
                     this.layers.esaSatCOLayer.addTo(this.map);
                     this.curESASatType = this.esaSatType
-                } 
-                else if (this.esaSatType == "CH4") {
+                } else if (this.esaSatType == "CH4") {
                     this.layers.esaSatCH4Layer.addTo(this.map);
                     this.curESASatType = this.esaSatType
                 }
@@ -581,11 +582,9 @@ export default {
         unloadESALayer: function () {
             if (this.curESASatType == "NO2") {
                 this.map.removeLayer(this.layers.esaSatNO2Layer)
-            } 
-            else if (this.curESASatType == "CO") {
+            } else if (this.curESASatType == "CO") {
                 this.map.removeLayer(this.layers.esaSatCOLayer)
-            } 
-            else if (this.curESASatType == "CH4") {
+            } else if (this.curESASatType == "CH4") {
                 this.map.removeLayer(this.layers.esaSatCH4Layer)
             }
         },
