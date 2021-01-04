@@ -22,26 +22,8 @@ export default new Vue({
         getLatestCityData: function (epaType) {
             return this.$axios.get("https://cors-anywhere.herokuapp.com/" + this.baseUrl + "/?parameters=" + epaType + "&" + this.bboxRecent);
         },
-        getHintonData: function () {
-            return this.$axios.get("https://cors-anywhere.herokuapp.com/" + 'https://www.tceq.texas.gov/cgi-bin/compliance/monops/daily_summary.pl?cams=401').then(response => {
-                var dom = $(response.data);
-                var tr = $('a[href="daily_info.pl?parameter:88101"]', dom).parent().parent();
-                var value = $('a[href="daily_info.pl?nodata"]', tr).first().parent().prev().text();
-                var index = $('a[href="daily_info.pl?nodata"]', tr).first().parent().prev().index();
-                var timestamp = this.$moment().set({
-                    'hour': index - 1,
-                    'minute': 0
-                }).format('YYYY-MM-DDThh:mm');
-                return {
-                    Latitude: 32.819978897803345,
-                    Longitude: -96.860113665106,
-                    Parameter: "PM2.5",
-                    SiteName: "Hinton Street",
-                    UTC: timestamp,
-                    Unit: "UG/M3",
-                    Value: value
-                }
-            });
+        getTceqData: function () {
+            return this.$axios.get("https://cors-anywhere.herokuapp.com/" + 'https://api.apify.com/v2/key-value-stores/Jq3RTLsqqOBBZyp8d/records/tceq?disableRedirect=1');
         },
         getHistoricalData: function (startDate, endDate) {
             return this.$axios.get(this.baseUrl + "/?startDate=" + startDate + "&endDate=" + endDate + "&parameters=" + this.bboxRecent);

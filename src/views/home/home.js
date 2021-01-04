@@ -510,14 +510,22 @@ export default {
                 this.epaGroup.addTo(this.map);
             }
             // Network retrieval
-            epaData.getLatestCityData(this.epaType).then(response => {
-                epaData.getHintonData().then(hintonResp => {
-                    response.data.push(hintonResp);
-                    response.data.forEach(result => {
-                        this.renderEPA(result);
-                    })
-                });
+            // epaData.getLatestCityData(this.epaType).then(response => {
+            //     epaData.getTceqData().then(tceqResp => {
+            //         tceqResp.data.forEach(item => {
+            //             response.data.push(item);
+            //         });
+            //         response.data.forEach(result => {
+            //             this.renderEPA(result);
+            //         })
+            //     });
 
+            // });
+
+            epaData.getTceqData().then(tceqResp => {
+                tceqResp.data.forEach(item => {
+                    this.renderEPA(item);
+                });
             });
         },
         /**
