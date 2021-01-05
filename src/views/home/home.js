@@ -82,7 +82,7 @@ export default {
                 this.map.removeLayer(this.epaGroup);
             }
             // When EPA layer is enabled, the OpenAQ layer is also enabled
-            this.openAQLayer = newValue;
+            //this.openAQLayer = newValue;
         },
         'openAQLayer': function (newValue) {
             if (newValue) {
@@ -94,7 +94,7 @@ export default {
         'epaType': function () {
             if (this.epaLayer) {
                 this.loadEPA(true);
-                this.loadOpenAQ(true);
+                //this.loadOpenAQ(true);
             }
         },
         'sensorLayer': function (newValue) {
