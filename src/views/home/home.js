@@ -402,11 +402,15 @@ export default {
             popup += "</div>";
             location.marker.bindPopup(popup);
         },
+
         renderPurpleAir: function (location) {
+            console.log(location);
+            var timeDiffHours = this.$moment.duration(this.$moment.utc().diff(this.$moment.unix(location.LastUpdateCheck))).asHours();
+            var fillColor = timeDiffHours > 24 ? '#808080' : this.getMarkerColor(location.pm2_5_atm);
             location.marker = L.marker([location.Lat, location.Lon], {
                 icon: L.divIcon({
                     className: 'svg-icon',
-                    html: this.getPentagonMarker("#9370DB", this.getMarkerColor(location.pm2_5_atm), 40, location.pm2_5_atm),
+                    html: this.getPentagonMarker("#9370DB", fillColor, 40, location.pm2_5_atm),
                     iconAnchor: [20, 10],
                     iconSize: [20, 32],
                     popupAnchor: [0, -30]
@@ -533,13 +537,14 @@ export default {
          */
         renderEPA: function (location) {
             // Create marker
-            var timeDiffHours = this.$moment.duration(this.$moment.utc().diff(this.$moment.utc(location.UTC))).asHours();
-            var fillColor = timeDiffHours > 24 ? '#808080' : "#66CDAA";
+
             var PM_value = "";
             if (location.Parameter == "PM2.5") {
                 fillColor = this.getMarkerColor(location.Value)
                 PM_value = location.Value;
             }
+            var timeDiffHours = this.$moment.duration(this.$moment.utc().diff(this.$moment.utc(location.UTC))).asHours();
+            var fillColor = timeDiffHours > 24 ? '#808080' : "#66CDAA";
             location.marker = L.marker([location.Latitude, location.Longitude], {
                 icon: L.divIcon({
                     className: 'svg-icon',
