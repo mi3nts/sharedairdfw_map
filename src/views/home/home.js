@@ -404,7 +404,6 @@ export default {
         },
 
         renderPurpleAir: function (location) {
-            console.log(location);
             var timeDiffHours = this.$moment.duration(this.$moment.utc().diff(this.$moment.unix(location.LastUpdateCheck))).asHours();
             var fillColor = timeDiffHours > 24 ? '#808080' : this.getMarkerColor(location.pm2_5_atm);
             location.marker = L.marker([location.Lat, location.Lon], {
