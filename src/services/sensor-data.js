@@ -6,7 +6,7 @@ import Vue from "vue";
 export default new Vue({
     data: function () {
         return {
-            baseUrl: "https://mintsdata.utdallas.edu:3000"
+            baseUrl: "https://api.sharedairdfw.com"
         }
     },
     methods: {
