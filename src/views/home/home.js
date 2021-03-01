@@ -543,7 +543,7 @@ export default {
                 PM_value = location.Value;
             }
             var timeDiffHours = this.$moment.duration(this.$moment.utc().diff(this.$moment.utc(location.UTC))).asHours();
-            var fillColor = timeDiffHours > 24 ? '#808080' : "#66CDAA";
+            var fillColor = timeDiffHours > 24 ? '#808080' : this.getMarkerColor(Number(location.Value));
             location.marker = L.marker([location.Latitude, location.Longitude], {
                 icon: L.divIcon({
                     className: 'svg-icon',
