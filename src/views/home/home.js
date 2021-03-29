@@ -394,11 +394,14 @@ export default {
             })
             location.marker.addTo(this.pollutionGroup);
             var popup = "<div style='font-size:14px'>";
-            popup += "<div style='text-align:center; font-weight:bold;'>" + location['Industry Name'] + " </div><br>";
-            popup += "<div style='text-align:center;'>" + location['Address'] + " </div><br>";
-            popup += "<li> SOX : " + location['Permitted PM (TPY)'] + " </li><br>";
-            popup += "<li> PM : " + location['Permitted SOx (TPY)'] + " </li><br>";
-            popup += "<li> Voc : " + location['Permitted VoC (TPY)'] + " </li><br>";
+            popup += "<div style='text-align:center; font-weight:bold;'>" + location['SITE'] + " </div><br>";
+            popup += "<div style='text-align:center;'>" + location['COMPANY'] + " </div><br>";
+            popup += "<li> PM10 TPY : " + location['PM10 TPY'] + " </li><br>";
+            popup += "<li> CO TPY : " + location['CO TPY'] + " </li><br>";
+            popup += "<li> NOX TPY : " + location['NOX TPY'] + " </li><br>";
+            popup += "<li> Pb TPY : " + location['Pb TPY'] + " </li><br>";
+            popup += "<li> VOC TPY : " + location['VOC TPY'] + " </li><br>";
+            popup += "<li> SO2 TPY : " + location['SO2 TPY'] + " </li><br>";
             popup += "</div>";
             location.marker.bindPopup(popup);
         },
