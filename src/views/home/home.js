@@ -396,12 +396,12 @@ export default {
             var popup = "<div style='font-size:14px'>";
             popup += "<div style='text-align:center; font-weight:bold;'>" + location['SITE'] + " </div><br>";
             popup += "<div style='text-align:center;'>" + location['COMPANY'] + " </div><br>";
-            popup += "<li> PM10 TPY : " + location['PM10 TPY'] + " </li><br>";
-            popup += "<li> CO TPY : " + location['CO TPY'] + " </li><br>";
-            popup += "<li> NOX TPY : " + location['NOX TPY'] + " </li><br>";
-            popup += "<li> Pb TPY : " + location['Pb TPY'] + " </li><br>";
-            popup += "<li> VOC TPY : " + location['VOC TPY'] + " </li><br>";
-            popup += "<li> SO2 TPY : " + location['SO2 TPY'] + " </li><br>";
+            popup += "<li> PM10 TPY : " + (location['PM10 TPY'] || 'N/A') + " </li><br>";
+            popup += "<li> CO TPY : " + (location['CO TPY'] || 'N/A') + " </li><br>";
+            popup += "<li> NOX TPY : " + (location['NOX TPY'] || 'N/A') + " </li><br>";
+            popup += "<li> Pb TPY : " + (location['Pb TPY'] || 'N/A') + " </li><br>";
+            popup += "<li> VOC TPY : " + (location['VOC TPY'] || 'N/A') + " </li><br>";
+            popup += "<li> SO2 TPY : " + (location['SO2 TPY'] || 'N/A') + " </li><br>";
             popup += "</div>";
             location.marker.bindPopup(popup);
         },
