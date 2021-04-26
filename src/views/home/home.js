@@ -366,12 +366,9 @@ export default {
             });
         },
         loadPurpleAir: function () {
-            purpleAirData.getSensorData(purpleAirData.sensors.join("|")).then(response => {
-                response.data.results.forEach(result => {
-                    /** They have nested devices. So, let's consider parent only */
-                    if (!result.ParentID) {
-                        this.renderPurpleAir(result);
-                    }
+            purpleAirData.getData().then(results => {
+                results.forEach(result => {
+                    this.renderPurpleAir(result);
                 });
             });
         },
@@ -407,12 +404,12 @@ export default {
         },
 
         renderPurpleAir: function (location) {
-            var timeDiffHours = this.$moment.duration(this.$moment.utc().diff(this.$moment.unix(location.LastUpdateCheck))).asHours();
-            var fillColor = timeDiffHours > 24 ? '#808080' : this.getMarkerColor(location.pm2_5_atm);
-            location.marker = L.marker([location.Lat, location.Lon], {
+            var timeDiffHours = this.$moment.duration(this.$moment.utc().diff(this.$moment.unix(location.last_seen))).asHours();
+            var fillColor = timeDiffHours > 24 ? '#808080' : this.getMarkerColor(location['pm2.5']);
+            location.marker = L.marker([location.latitude, location.longitude], {
                 icon: L.divIcon({
                     className: 'svg-icon',
-                    html: this.getPentagonMarker("#9370DB", fillColor, 40, location.pm2_5_atm),
+                    html: this.getPentagonMarker("#9370DB", fillColor, 40, location["pm2.5"]),
                     iconAnchor: [20, 10],
                     iconSize: [20, 32],
                     popupAnchor: [0, -30]
@@ -420,14 +417,14 @@ export default {
             })
             location.marker.addTo(this.purpleAirGroup);
             var popup = "<div style='font-size:14px'>";
-            popup += "<div style='text-align:center; font-weight:bold'>" + location.Label + " </div><br>";
+            popup += "<div style='text-align:center; font-weight:bold'>" + location.sensor_index + " </div><br>";
             //Using channel A
-            popup += "<li class='pm25'> PM2.5 : " + location.pm2_5_atm + " µg/m³ </li><br>";
-            popup += "<li> PM1 : " + location.pm1_0_atm + " µg/m³ </li><br>";
-            popup += "<li> PM10 : " + location.pm10_0_atm + " µg/m³ </li><br>";
-            popup += "<li> Temperature : " + location.temp_f + "°F </li><br>";
+            popup += "<li class='pm25'> PM2.5 : " + location["pm2.5"] + " µg/m³ </li><br>";
+            popup += "<li> PM1 : " + location["pm1.0"] + " µg/m³ </li><br>";
+            popup += "<li> PM10 : " + location["pm10.0"] + " µg/m³ </li><br>";
+            popup += "<li> Temperature : " + location.temperature + "°F </li><br>";
             popup += "<li> Humidity : " + location.humidity + "% </li><br>";
-            let unix_timestamp = location.LastUpdateCheck;
+            let unix_timestamp = location.last_seen;
             var a = new Date(unix_timestamp * 1000);
             var months = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
             var year = a.getFullYear();

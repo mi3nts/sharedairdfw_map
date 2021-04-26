@@ -17,6 +17,30 @@ export default new Vue({
          */
         getSensorData: function (sensorID) {
             return this.$axios.get(this.baseUrl + "?show=" + sensorID);
+        },
+        getData: function () {
+            return this.$axios.get("https://api.purpleair.com/v1/sensors", {
+                params: {
+                    fields: 'icon,location_type,latitude,longitude,altitude,last_seen,channel_state,channel_flags,confidence,pm1.0,pm2.5,pm2.5_10minute,pm2.5_30minute,pm2.5_60minute,pm2.5_6hour,pm2.5_24hour,pm2.5_1week,pm10.0,0.3_um_count,0.5_um_count,1.0_um_count,2.5_um_count,5.0_um_count,10.0_um_count,humidity,temperature,pressure,voc,ozone1,analog_input',
+                    nwlng: -97.7233885077807,
+                    nwlat: 33.26726487706603,
+                    selng: -96.124877880838,
+                    selat: 32.48530400517982
+                },
+                headers :{
+                    'X-API-Key' : '05E9B581-837F-11EB-8C3A-42010A800259'
+                }
+            }).then(response =>{
+                let results = [];
+                response.data.data.forEach(element => {
+                    let item = {};
+                    response.data.fields.forEach((field,index) =>{
+                        item[field] = element[index];
+                    });
+                    results.push(item);
+                });
+                return results;
+            });
         }
     }
 });
