@@ -25,7 +25,7 @@ export default new Vue({
                     nwlng: -97.7233885077807,
                     nwlat: 33.26726487706603,
                     selng: -96.124877880838,
-                    selat: 32.48530400517982
+                    selat: 32.40530400517982
                 },
                 headers :{
                     'X-API-Key' : '05E9B581-837F-11EB-8C3A-42010A800259'
