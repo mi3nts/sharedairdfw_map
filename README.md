@@ -1,5 +1,7 @@
 # SharedAirDFW
 
+Requires npm version version 6.x
+
 ## Project setup
 ```
 npm install
