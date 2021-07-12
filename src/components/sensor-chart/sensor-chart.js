@@ -36,7 +36,7 @@ export default {
         updateDataInterval: function (value) {
             this.dataInterval = value
             var text = 'All data'
-            switch(value) {
+            switch (value) {
                 case '1 60:60:60':
                     text = '1 Day'
                     break
@@ -56,33 +56,45 @@ export default {
             var length = values.length;
             length = length / 3000;
             length = Math.round(length);
-            
+
             var newValues = [];
             var temp = [];
             var indexJ = 0;
             var average = 0;
-            
-            temp.push({x:values[0].x, y:values[0].y});
-            for(var i = 1; i < values.length; i++){
-                if(temp.length >= length){
+
+            temp.push({
+                x: values[0].x,
+                y: values[0].y
+            });
+            for (var i = 1; i < values.length; i++) {
+                if (temp.length >= length) {
                     average = 0;
-                    for(indexJ = 0; indexJ < temp.length; indexJ++){
+                    for (indexJ = 0; indexJ < temp.length; indexJ++) {
                         average += temp[indexJ].y;
                     }
                     average = average / temp.length;
-                    newValues.push({x:temp[0].x, y:average});
-                    
+                    newValues.push({
+                        x: temp[0].x,
+                        y: average
+                    });
+
                     temp = [];
                 }
-                temp.push({x:values[i].x, y:values[i].y});
+                temp.push({
+                    x: values[i].x,
+                    y: values[i].y
+                });
             }
-            if(temp.length >= 1){
+            if (temp.length >= 1) {
                 average = 0;
-                for(indexJ = 0; indexJ < temp.length; indexJ++){
+                for (indexJ = 0; indexJ < temp.length; indexJ++) {
                     average += temp[indexJ].y;
                 }
                 average = average / temp.length;
-                newValues.push({x:temp[0].x, y:average});
+                newValues.push({
+                    x: temp[0].x,
+                    y: average
+                });
             }
             return newValues;
         },
@@ -95,10 +107,12 @@ export default {
                     y: data[i].pm2_5
                 });
             }
-            if(sensorValues.length > 3000){
+            if (sensorValues.length > 3000) {
                 sensorValues = this.changeInterval(sensorValues);
             }
-            var maxYValue = Math.max.apply(Math, sensorValues.map(function(o) { return o.y; }))
+            var maxYValue = Math.max.apply(Math, sensorValues.map(function (o) {
+                return o.y;
+            }))
             var yellowValue = 0;
             var orangeValue = 0;
             var redValue = 0;
@@ -231,6 +245,7 @@ export default {
                         return d3.time.format('%b %d %I:%M:%S%p')(new Date(d))
                     })
                     .staggerLabels(true);
+                
                 chart.yAxis1
                     .tickFormat(function (d) {
                         return d3.format(',.2f')(d) + 'µg/m³'
