@@ -43,7 +43,11 @@ export default {
             esaSatType: "NO2",
             curESASatType: "NO2",
             /** Currently selected PM type */
+            /** If defaults change, you must change all three below values accordingly */
             pmType: "pm2_5",
+            dataOverTime: "_past_hour",
+            dataTypeToDisplay: "pm2_5_past_hour", // pmType + dataOverTime
+            sensorLastUpdate: null,
             /** Default state of left side expansion panels */
             activePanel: 0,
             /** All available sensor instances  */
@@ -59,7 +63,12 @@ export default {
     },
     watch: {
         'pmType': function () {
-            this.refreshIcons()
+            this.dataTypeToDisplay = this.pmType + this.dataOverTime
+            this.refreshSensorIcons()
+        },
+        'dataOverTime': function () {
+            this.dataTypeToDisplay = this.pmType + this.dataOverTime
+            this.refreshSensorIcons()
         },
         'purpleAirLayer': function (newValue) {
             if (newValue) {
@@ -564,6 +573,7 @@ export default {
             popup += "</div>";
             location.marker.bindPopup(popup);
         },
+        
         /**
          * Loads ESA satilite layers onto the map
          */
@@ -600,38 +610,50 @@ export default {
                 this.map.removeLayer(this.layers.esaSatCH4Layer)
             }
         },
+
+
         loadData: function () {
-            sensorData.getSensors().then(response => {
+            sensorData.getMainSensorData().then(response => {
                 var i = 0
                 response.data.forEach(s => {
-                    sensorData.getSensorLocation(s).then(sensorLocatRes => {
-                        if (sensorLocatRes.data.length &&
-                            sensorLocatRes.data[0].longitude != null && sensorLocatRes.data[0].latitude != null) {
-                            sensorData.getSensorName(s).then(sensorNameRes => {
-                                if (sensorNameRes.data.length && sensorNameRes.data[0].sensor_name != null) {
-                                    sensorData.getSensorData(s).then(sensorResponse => {
-                                        if (sensorResponse.data.length) {
-                                            sensorResponse.data.id = s;
-                                            this.sensors.push(sensorResponse.data[0]);
-                                            this.renderSensor(sensorResponse.data[0], sensorLocatRes.data[0], sensorNameRes.data[0].sensor_name, i++);
-                                        }
-                                    });
-                                }
-                            })
-                        }
-                    });
+                    s.pm1_latest = s.pm1
+                    s.pm2_5_latest = s.pm2_5
+                    s.pm10_latest = s.pm10
+                    this.sensors.push(s)
+
+                    // Create new sensors for display
+                    this.renderSensor(s, s.latitude, s.longitude, s.sensor_name, i++)
+
+                    // Fetch additional data (do not chain async calls)
+                    // Refresh display when done in case data was not available when sensors were created
+                    sensorData.getSensorPastHourAverage(s.sensor_id, 'pm1', 1).then(response => {
+                        s.pm1_past_hour = response.data[0].avg
+                        this.refreshSensorIcons()
+                    })
+                    sensorData.getSensorPastHourAverage(s.sensor_id, 'pm2_5', 1).then(response => {
+                        s.pm2_5_past_hour = response.data[0].avg
+                        this.refreshSensorIcons()
+                    })
+                    sensorData.getSensorPastHourAverage(s.sensor_id, 'pm10', 1).then(response => {
+                        s.pm10_past_hour = response.data[0].avg
+                        this.refreshSensorIcons()
+                    })
+
+                    // Set last update timestamp
+                    var now = new Date()
+                    this.sensorLastUpdate = now.toLocaleString('en-US', { timeZone: 'UTC'})
                 });
             });
         },
-
+        
         // single click pop up information
-        renderSensor: function (sensor, sensorLocation, sensorName, zIndexPriority) {
+        renderSensor: function (sensor, sensorLat, sensorLon, sensorName, zIndexPriority) {
             var timeDiffMinutes = this.$moment.duration(this.$moment.utc().diff(this.$moment.utc(sensor.timestamp))).asMinutes();
-            var fillColor = timeDiffMinutes > 60 ? '#808080' : this.getMarkerColor(sensor[this.pmType]);
-            sensor.marker = L.marker([sensorLocation.latitude, sensorLocation.longitude], {
+            var fillColor = timeDiffMinutes > 60 ? '#808080' : this.getMarkerColor(sensor[this.dataTypeToDisplay]);
+            sensor.marker = L.marker([sensorLat, sensorLon], {
                 icon: L.divIcon({
                     className: 'svg-icon',
-                    html: this.getCircleMarker("#38b5e6", fillColor, 40, parseFloat(sensor[this.pmType]).toFixed(2)),
+                    html: this.getCircleMarker("#38b5e6", fillColor, 40, parseFloat(sensor[this.dataTypeToDisplay]).toFixed(2)),
                     iconAnchor: [20, 10],
                     iconSize: [20, 32],
                     popupAnchor: [0, -30]
@@ -667,6 +689,7 @@ export default {
                     })
                 })
                 newPopup.$mount("#flyCard")
+
                 // ...track it in the marker component for destruction later
                 e.popup._source.sensorPopup = newPopup
             });
@@ -675,6 +698,23 @@ export default {
             sensor.marker.on('popupclose', function (e) {
                 e.popup._source.sensorPopup.$destroy("#flyCard")
             })
+        },
+        refreshSensorIcons() {
+            this.sensors.forEach(sensor => {
+                // Safety check in case the async data fetch for past hour average does not complete in time, thus preventing a site
+                //   crash client-side due to a missing object member variable
+                if(this.dataTypeToDisplay in sensor) {
+                    var timeDiffMinutes = this.$moment.duration(this.$moment.utc().diff(this.$moment.utc(sensor.timestamp))).asMinutes();
+                    var fillColor = timeDiffMinutes > 60 ? '#808080' : this.getMarkerColor(sensor[this.dataTypeToDisplay]);
+                    sensor.marker.setIcon(L.divIcon({
+                        className: 'svg-icon',
+                        html: this.getCircleMarker("#38b5e6", fillColor, 40, parseFloat(sensor[this.dataTypeToDisplay]).toFixed(2)),
+                        iconAnchor: [20, 10],
+                        iconSize: [20, 32],
+                        popupAnchor: [0, -30]
+                    }));
+                }
+            });
         },
 
         buildMarkerIcon: function (sensor) {
@@ -688,16 +728,9 @@ export default {
                 popupAnchor: [0, -30]
             })
         },
-
-        refreshIcons() {
-            this.sensors.forEach(sensor => {
-                sensor.marker.setStyle({
-                    fillColor: this.getMarkerColor(sensor)
-                });
-            });
-        },
         getMarkerColor(PM) {
-            if (PM >= 0 && PM <= 10) return "#ffff9e" //"#ffff66";
+            if (PM == 0) return '#808080'
+            else if (PM > 0 && PM <= 10) return "#ffff9e" //"#ffff66";
             else if (PM > 10 && PM <= 20) return "#ff6600";
             else if (PM > 20 && PM <= 50) return "#ff5534"; //"#cc0000";
             else if (PM > 50 && PM <= 100) return "#D34FD0"; //"#990099";

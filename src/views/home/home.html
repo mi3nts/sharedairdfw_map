@@ -35,10 +35,18 @@
                 <v-expansion-panel-content>
                     <div>
                         <v-radio-group hide-details v-model="pmType" class="my-0">
-                            <v-radio color="primary" label="PM2.5" value="pm2_5"></v-radio>
+                            <!-- <v-radio :disabled="!sensorLayer" color="primary" label="PM 1" value="pm1"></v-radio> -->
+                            <v-radio :disabled="!sensorLayer" color="primary" label="PM 2.5" value="pm2_5"></v-radio>
+                            <!-- <v-radio :disabled="!sensorLayer" color="primary" label="PM 10" value="pm10"></v-radio> -->
                         </v-radio-group>
+                        <hr class="my-0 mt-3">
+                        <p class="my-0 mt-3"><v-icon>access_time</v-icon> Access Time</p>
+                        <v-radio-group hide-details v-model="dataOverTime" class="my-0">
+                            <v-radio :disabled="!sensorLayer" color="primary" label="Past hour average" value="_past_hour"></v-radio>
+                            <v-radio :disabled="!sensorLayer" color="primary" label="30-second average" value="_latest"></v-radio>
+                        </v-radio-group>
+                        <p class="my-0 mt-3">Last update: <br>{{sensorLastUpdate ? sensorLastUpdate + ' UTC': 'Updating...' }}</p>
                     </div>
-                    <div class="time-label"><v-icon>access_time</v-icon> <span>30-second average</span></div>
                 </v-expansion-panel-content>
             </v-expansion-panel>
             <!-- <v-expansion-panel>
