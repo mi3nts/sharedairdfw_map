@@ -49,4 +49,14 @@
             vertical-align: middle;
         }
     }
+
+    .maintenance {
+        img {
+            height: 20px;
+            width: auto;
+        }
+        label{
+            vertical-align: text-bottom;
+        }
+    }
 }
