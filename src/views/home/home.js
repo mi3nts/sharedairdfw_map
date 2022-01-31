@@ -45,7 +45,7 @@ export default {
             /** Currently selected PM type */
             /** If defaults change, you must change all three below values accordingly */
             pmType: "pm2_5",
-            dataOverTime: "_past_hour",
+            dataOverTime: "_latest",
             dataTypeToDisplay: "pm2_5_past_hour", // pmType + dataOverTime
             sensorLastUpdate: null,
             /** Default state of left side expansion panels */
