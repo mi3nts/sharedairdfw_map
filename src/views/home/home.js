@@ -653,7 +653,7 @@ export default {
             sensor.marker = L.marker([sensorLat, sensorLon], {
                 icon: L.divIcon({
                     className: 'svg-icon',
-                    html: this.getCircleMarker("#38b5e6", fillColor, 40, parseFloat(sensor[this.dataTypeToDisplay]).toFixed(2)),
+                    html: this.getCircleMarker("#38b5e6", fillColor, 40, parseFloat(sensor[this.dataTypeToDisplay]).toFixed(2), timeDiffMinutes > 60),
                     iconAnchor: [20, 10],
                     iconSize: [20, 32],
                     popupAnchor: [0, -30]
@@ -708,7 +708,7 @@ export default {
                     var fillColor = timeDiffMinutes > 60 ? '#808080' : this.getMarkerColor(sensor[this.dataTypeToDisplay]);
                     sensor.marker.setIcon(L.divIcon({
                         className: 'svg-icon',
-                        html: this.getCircleMarker("#38b5e6", fillColor, 40, parseFloat(sensor[this.dataTypeToDisplay]).toFixed(2)),
+                        html: this.getCircleMarker("#38b5e6", fillColor, 40, parseFloat(sensor[this.dataTypeToDisplay]).toFixed(2), timeDiffMinutes > 60),
                         iconAnchor: [20, 10],
                         iconSize: [20, 32],
                         popupAnchor: [0, -30]
@@ -751,9 +751,13 @@ export default {
         invertHex: function (hex) {
             return (Number(`0x1${hex}`) ^ 0xFFFFFF).toString(16).substr(1).toUpperCase()
         },
-        getCircleMarker(color, fill, size, value) {
+        getCircleMarker(color, fill, size, value, lowBattery) {
             var textColor = this.invertHex(fill);
-            var svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24"><circle fill="${fill}" fill-opacity="0.8" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="${color}" cx="12" cy="12" r="10"></circle><text x="12" y="15" fill="${textColor}" text-anchor="middle" font-family="PT Sans" font-size="8">${value}</text></svg>`;
+            var svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24"><circle fill="${fill}" fill-opacity="0.8" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="${color}" cx="12" cy="12" r="10"></circle><text x="12" y="15" fill="${textColor}" text-anchor="middle" font-family="PT Sans" font-size="8">${value!='NaN'?value :''}</text></svg>`;
+            if(lowBattery)
+            {
+                svg += `<img src="/img/low_battery.png" style="height: 20px;position: absolute;top: 10px;left: 14px;" />`;
+            }
             return svg;
         },
         getSquareMarker(color, fill, size, value) {
