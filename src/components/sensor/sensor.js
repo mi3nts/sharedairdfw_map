@@ -1,12 +1,14 @@
 import sensorData from "../../services/sensor-data";
 import SensorChart from "../sensor-chart"
+import SensorHighchart from "../sensor-highchart"
 /**
  * This is stand alone component showing sensor data only. 
  * Eventually it will grow to show more data.
  */
 export default {
     components: {
-        SensorChart
+        SensorChart,
+        SensorHighchart
     },
     props: ["spot", "spotName"],
     data: () => ({

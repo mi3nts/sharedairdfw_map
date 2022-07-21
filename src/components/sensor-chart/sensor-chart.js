@@ -28,6 +28,7 @@ export default {
                 if (response.data.length) {
                     $("#chart2_" + this.sensor.sensor_id).html("<svg> </svg>")
                     this.createChart(response.data);
+                    console.log(response.data);
                 } else {
                     $("#chart2_" + this.sensor.sensor_id).html("<div class='my-4 text-center'>No data available.</div>");
                 }

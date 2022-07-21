@@ -38,6 +38,7 @@
         </div>
     </div>
     <v-dialog v-model="showMore" max-width="90%">
-        <sensor-chart :sensor="spot" @close="showMore=false;"></sensor-chart>
+        <!-- <sensor-chart :sensor="spot" @close="showMore=false;"></sensor-chart> -->
+        <sensor-highchart :sensor="spot" @close="showMore=false;"></sensor-highchart>
     </v-dialog>
 </div>
