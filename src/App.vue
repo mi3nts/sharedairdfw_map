@@ -12,9 +12,15 @@
         <particulate-matter @close="showPM=false;"></particulate-matter>
       </v-dialog>
       <v-spacer></v-spacer>
+        <v-btn x-large depressed exact text >
+          <a href="https://twitter.com/AirDfw" target="_blank"><img class="mr-2" height="30px" src="/img/twitter.png" /></a>
+      </v-btn>
       <v-btn x-large depressed exact text @click="showPM=true;">
         <span class="mr-2 d-none d-lg-flex d-xl-none">Particulate Matter?</span>
         <v-icon class="d-flex">help</v-icon>
+      </v-btn>
+      <v-btn x-large depressed exact text  >
+        <v-icon class="d-flex" @click="openEmail()">mail</v-icon>
       </v-btn>
       <v-btn x-large exact text @click="showAbout=true;">
         <span class="mr-2">About</span>
@@ -74,6 +80,17 @@ export default {
   }),
   created: function() {
     window["moment"] = this.$moment;
+  },
+  methods:{
+    openEmail(){
+      //alert('hello');      
+      let emailTo ="sharedairdfw@gmail.com";
+      let emailCC ="";
+      let emailSub="";
+      let emailBody="";
+
+      location.href = "mailto:"+emailTo+'?cc='+emailCC+'&subject='+emailSub+'&body='+emailBody;
+    }
   }
 };
 </script>
