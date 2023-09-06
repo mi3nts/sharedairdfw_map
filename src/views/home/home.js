@@ -46,7 +46,7 @@ export default {
             /** If defaults change, you must change all three below values accordingly */
             pmType: "pm2_5",
             dataOverTime: "_latest",
-            dataTypeToDisplay: "pm2_5_past_hour", // pmType + dataOverTime
+            dataTypeToDisplay: "pm2_5_latest", // pmType + dataOverTime
             sensorLastUpdate: null,
             /** Default state of left side expansion panels */
             activePanel: 0,
@@ -614,6 +614,9 @@ export default {
 
         loadData: function () {
             sensorData.getMainSensorData().then(response => {
+
+                console.log("sensor response");
+                console.log(response);
                 var i = 0
                 response.data.forEach(s => {
                     s.pm1_latest = s.pm1
